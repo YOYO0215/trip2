@@ -1,0 +1,2225 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>도희의 17박 18일 동해·남해 느린 배낭여행 플래너 (2026.11.26 – 12.13)</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Noto Sans KR & Noto Serif KR -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            paper: '#FAF8F5',
+            card: '#FFFFFF',
+            sand: '#F2EDE4',
+            forest: {
+              DEFAULT: '#243B32',
+              light: '#355448',
+              soft: '#EBF1EE'
+            },
+            terracotta: {
+              DEFAULT: '#B85D3B',
+              light: '#D47855',
+              soft: '#F9EFEA'
+            },
+            ink: {
+              DEFAULT: '#232624',
+              muted: '#5E6460',
+              subtle: '#8D938F'
+            }
+          },
+          fontFamily: {
+            sans: ['"Noto Sans KR"', 'sans-serif'],
+            serif: ['"Noto Serif KR"', 'serif']
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      background-color: #FAF8F5;
+      color: #232624;
+      font-family: 'Noto Sans KR', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .font-serif-title {
+      font-family: 'Noto Serif KR', serif;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F2EDE4;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #C7C0B5;
+      border-radius: 9999px;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-terracotta-soft selection:text-terracotta">
+
+  <!-- Toast Notification Container (Replaces alert) -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Confirmation Modal (Replaces confirm) -->
+  <div id="confirm-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border border-stone-200">
+      <h3 id="confirm-title" class="text-lg font-bold text-ink mb-2">확인</h3>
+      <p id="confirm-message" class="text-sm text-ink-muted mb-6 leading-relaxed"></p>
+      <div class="flex justify-end gap-2">
+        <button id="confirm-cancel-btn" class="px-4 py-2.5 rounded-xl text-sm font-medium text-ink-muted hover:bg-stone-100 transition">취소</button>
+        <button id="confirm-ok-btn" class="px-4 py-2.5 rounded-xl text-sm font-medium bg-terracotta text-white hover:bg-terracotta-light transition">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export/Import Modal -->
+  <div id="backup-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-stone-200">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-lg font-bold text-ink flex items-center gap-2">
+          <i data-lucide="share" class="w-5 h-5 text-forest"></i> 기록 백업 및 내보내기
+        </h3>
+        <button onclick="closeBackupModal()" class="p-1.5 rounded-lg text-ink-muted hover:bg-stone-100">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <p class="text-xs text-ink-muted mb-3 leading-relaxed">
+        현재까지 체크한 준비물, 일정 메모, 지출 내역을 텍스트로 복사하거나 JSON 백업 데이터를 저장할 수 있습니다.
+      </p>
+      <textarea id="backup-textarea" rows="8" class="w-full p-3 text-xs font-mono bg-paper border border-stone-200 rounded-xl focus:outline-none focus:border-forest mb-4" readonly></textarea>
+      <div class="flex flex-wrap justify-between gap-2">
+        <div class="flex gap-2">
+          <button onclick="setBackupFormat('summary')" id="btn-fmt-summary" class="px-3 py-2 rounded-xl text-xs font-medium bg-forest text-white">요약 텍스트</button>
+          <button onclick="setBackupFormat('json')" id="btn-fmt-json" class="px-3 py-2 rounded-xl text-xs font-medium bg-stone-100 text-ink-muted">JSON 전체 데이터</button>
+        </div>
+        <button onclick="copyBackupText()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-terracotta text-white hover:bg-terracotta-light flex items-center gap-1.5">
+          <i data-lucide="copy" class="w-4 h-4"></i> 클립보드 복사
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Google Sheets Real-time Sync Modal -->
+  <div id="sheets-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-5 sm:p-6 shadow-xl border border-stone-200 max-h-[90vh] overflow-y-auto space-y-4">
+      <div class="flex items-center justify-between border-b border-stone-100 pb-3">
+        <h3 class="text-base sm:text-lg font-bold text-ink flex items-center gap-2">
+          <i data-lucide="cloud" class="w-5 h-5 text-forest"></i> 구글 시트 실시간 자동 동기화 설정
+        </h3>
+        <button onclick="closeSheetsModal()" class="p-1.5 rounded-lg text-ink-muted hover:bg-stone-100">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="bg-forest-soft/50 border border-forest/20 rounded-xl p-3.5 text-xs text-ink space-y-1.5 leading-relaxed">
+        <div class="font-bold text-forest">작동 방식 안내</div>
+        <p>• 아래에 본인의 구글 시트 웹 앱 URL을 한 번만 등록해 두면, 플래너에서 체크하거나 수정할 때마다 <strong>1.5초 뒤 구글 시트의 5개 시트(일정·교통·숙소·지출·패킹)에 실시간 자동 기록</strong>됩니다.</p>
+        <p>• 스마트폰이나 카페 노트북에서 새로 접속할 때도 구글 시트에 저장된 최신 상태를 자동으로 불러옵니다.</p>
+      </div>
+
+      <div class="space-y-2">
+        <label class="block text-xs font-bold text-ink">Google Apps Script 웹 앱 URL</label>
+        <div class="flex flex-col sm:flex-row gap-2">
+          <input
+            type="url"
+            id="sheets-webhook-input"
+            placeholder="https://script.google.com/macros/s/.../exec"
+            class="flex-1 px-3 py-2.5 text-xs bg-paper border border-stone-200 rounded-xl focus:outline-none focus:border-forest font-mono"
+          />
+          <button onclick="saveSheetsWebhookUrl()" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-forest text-white hover:bg-forest-light transition shrink-0">
+            연결 저장 &amp; 즉시 동기화
+          </button>
+        </div>
+        <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+          <span id="sheets-modal-status" class="text-[11px] text-ink-muted">현재 연결된 URL이 없습니다.</span>
+          <div class="flex gap-2">
+            <button onclick="pullFromGoogleSheets()" class="px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-sand text-ink hover:bg-stone-200 transition flex items-center gap-1">
+              <i data-lucide="refresh-cw" class="w-3 h-3"></i> 시트에서 불러오기
+            </button>
+            <button onclick="pushToGoogleSheets(true)" class="px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-terracotta-soft text-terracotta hover:bg-terracotta hover:text-white transition flex items-center gap-1">
+              <i data-lucide="upload-cloud" class="w-3 h-3"></i> 지금 시트로 보내기
+            </button>
+          </div>
+        </div>
+        <div class="bg-sand/60 border border-stone-200 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 mt-2">
+          <div class="text-[11px] text-ink-muted leading-relaxed">
+            <strong class="text-ink">모바일 새로고침 초기화 방지:</strong> 웹 호스팅(Netlify 등)에 올린 뒤 아래 버튼으로 <strong>전용 고정 링크</strong>를 복사해 스마트폰 브라우저(크롬/사파리) 북마크로 여세요.
+          </div>
+          <button onclick="copyMagicBookmarkLink()" class="px-3 py-2 rounded-xl text-[11px] font-bold bg-forest text-white hover:bg-forest-light transition shrink-0 flex items-center justify-center gap-1">
+            <i data-lucide="link" class="w-3.5 h-3.5"></i> 모바일 고정 링크 복사
+          </button>
+        </div>
+      </div>
+
+      <!-- Step-by-step Apps Script Code Guide -->
+      <div class="border-t border-stone-100 pt-3 space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-ink">1분 연결 가이드 (구글 시트 스크립트 코드)</span>
+          <button onclick="copyAppsScriptCode()" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-stone-100 text-ink hover:bg-stone-200 flex items-center gap-1">
+            <i data-lucide="copy" class="w-3 h-3"></i> 스크립트 코드 복사
+          </button>
+        </div>
+        <ol class="text-[11px] text-ink-muted space-y-1 list-decimal list-inside leading-relaxed">
+          <li>새 구글 스프레드시트를 열고 상단 메뉴 <strong>[확장 프로그램] → [Apps Script]</strong>를 클릭합니다.</li>
+          <li>기존 코드를 모두 지우고 아래 스크립트 코드를 붙여넣은 뒤 저장(Ctrl+S)합니다.</li>
+          <li>우측 상단 <strong>[배포] → [새 배포] → 유형: 웹 앱</strong> 선택, 액세스 권한을 <strong>[모든 사용자]</strong>로 설정 후 배포하여 나온 <strong>웹 앱 URL</strong>을 위 입력칸에 붙여넣으세요.</li>
+        </ol>
+        <textarea id="apps-script-code-box" rows="7" readonly class="w-full p-3 text-[11px] font-mono bg-stone-900 text-stone-100 rounded-xl focus:outline-none"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sticky Header -->
+  <header class="sticky top-0 z-40 bg-paper/95 backdrop-blur-md border-b border-stone-200/80">
+    <div class="max-w-5xl mx-auto px-4 pt-3.5 pb-2">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-forest text-white tracking-wide">
+              17박 18일 시계방향 루트
+            </span>
+            <span id="dday-badge" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-terracotta-soft text-terracotta">
+              D-8 출발 준비중
+            </span>
+          </div>
+          <h1 class="font-serif-title text-lg sm:text-xl font-bold text-ink mt-1 tracking-tight">
+            도희의 17박 18일 동해·남해 느린 배낭여행 플래너
+          </h1>
+          <p class="text-[11px] sm:text-xs text-ink-muted mt-0.5">
+            2026.11.26 (목) 속초 웰컴빌리지 출발 → 2026.12.13 (일) 통영에서 서울 복귀 | 하루 최대 20,000보 이내 &amp; 카페 기록 여정
+          </p>
+        </div>
+
+        <!-- Quick Status & Utility Buttons -->
+        <div class="flex items-center justify-between sm:justify-end gap-2 pt-1 sm:pt-0 shrink-0">
+          <div class="flex items-center gap-2 text-xs text-ink-muted bg-sand/70 px-3 py-1.5 rounded-xl">
+            <span title="일정 진행률">일정 <strong id="header-itinerary-progress" class="text-forest">0/18일</strong></span>
+            <span class="text-stone-300">|</span>
+            <span title="숙소 예약률">숙소 <strong id="header-stay-progress" class="text-forest">1/7곳</strong></span>
+            <span class="text-stone-300">|</span>
+            <span title="교통 예매율">교통 <strong id="header-transport-progress" class="text-forest">0/8건</strong></span>
+            <span class="text-stone-300">|</span>
+            <span title="패킹 진행률">짐 <strong id="header-packing-progress" class="text-terracotta">0%</strong></span>
+          </div>
+          <button onclick="openSheetsModal()" id="header-sheets-btn" title="구글 시트 실시간 연동 설정" class="px-2.5 py-2 rounded-xl bg-white border border-stone-200 text-xs font-semibold text-ink-muted hover:text-forest hover:border-forest transition flex items-center gap-1.5">
+            <span id="sheets-status-dot" class="w-2 h-2 rounded-full bg-stone-300"></span>
+            <span id="sheets-status-label" class="hidden md:inline">시트 미연결</span>
+            <i data-lucide="sheet" class="w-4 h-4 md:hidden"></i>
+          </button>
+          <button onclick="openBackupModal()" title="백업/내보내기" class="p-2 rounded-xl bg-white border border-stone-200 text-ink-muted hover:text-forest hover:border-forest transition">
+            <i data-lucide="download" class="w-4 h-4"></i>
+          </button>
+          <button onclick="confirmResetAll()" title="데이터 초기화" class="p-2 rounded-xl bg-white border border-stone-200 text-ink-muted hover:text-terracotta hover:border-terracotta transition">
+            <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Top 4 Summary Cards -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 mt-3">
+        <div class="bg-white/90 border border-stone-200/80 rounded-xl px-3 py-2">
+          <div class="text-[10px] sm:text-[11px] text-ink-muted">1. 총 여정 · 걷기</div>
+          <div class="text-xs sm:text-sm font-bold text-ink mt-0.5">17박 18일 <span class="font-normal text-[11px] text-forest">(일 2만보 상한)</span></div>
+        </div>
+        <div class="bg-white/90 border border-stone-200/80 rounded-xl px-3 py-2 cursor-pointer hover:border-terracotta transition" onclick="switchTab('hubs')">
+          <div class="text-[10px] sm:text-[11px] text-ink-muted">2. 거점 숙소 예약 현황</div>
+          <div class="text-xs sm:text-sm font-bold text-terracotta mt-0.5" id="summary-stay-card">1 / 7 거점 확정</div>
+        </div>
+        <div class="bg-white/90 border border-stone-200/80 rounded-xl px-3 py-2 cursor-pointer hover:border-forest transition" onclick="switchTab('transport')">
+          <div class="text-[10px] sm:text-[11px] text-ink-muted">3. 교통편 예매 현황</div>
+          <div class="text-xs sm:text-sm font-bold text-forest mt-0.5" id="summary-transport-card">0 / 8 구간 완료</div>
+        </div>
+        <div class="bg-white/90 border border-stone-200/80 rounded-xl px-3 py-2 cursor-pointer hover:border-forest transition" onclick="switchTab('packing')">
+          <div class="text-[10px] sm:text-[11px] text-ink-muted">4. 패킹 준비율</div>
+          <div class="text-xs sm:text-sm font-bold text-ink mt-0.5" id="summary-packing-card">0 / 32 완료 (0%)</div>
+        </div>
+      </div>
+
+      <!-- Tab Navigation -->
+      <nav class="flex gap-1.5 mt-3 overflow-x-auto no-scrollbar pb-1" aria-label="메인 탭">
+        <button onclick="switchTab('itinerary')" data-tab="itinerary" class="tab-btn active shrink-0 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-1.5 bg-forest text-white shadow-xs">
+          <i data-lucide="map" class="w-4 h-4"></i> 1. 전체 일정 &amp; 도보
+        </button>
+        <button onclick="switchTab('transport')" data-tab="transport" class="tab-btn shrink-0 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium transition flex items-center gap-1.5 text-ink-muted hover:bg-sand/80">
+          <i data-lucide="ticket" class="w-4 h-4"></i> 2. 교통편 예매 관리
+        </button>
+        <button onclick="switchTab('hubs')" data-tab="hubs" class="tab-btn shrink-0 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium transition flex items-center gap-1.5 text-ink-muted hover:bg-sand/80">
+          <i data-lucide="coffee" class="w-4 h-4"></i> 3. 거점별 카페 &amp; 숙소
+        </button>
+        <button onclick="switchTab('budget')" data-tab="budget" class="tab-btn shrink-0 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium transition flex items-center gap-1.5 text-ink-muted hover:bg-sand/80">
+          <i data-lucide="wallet" class="w-4 h-4"></i> 4. 예산 &amp; 지출 관리
+        </button>
+        <button onclick="switchTab('packing')" data-tab="packing" class="tab-btn shrink-0 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium transition flex items-center gap-1.5 text-ink-muted hover:bg-sand/80">
+          <i data-lucide="backpack" class="w-4 h-4"></i> 5. 패킹 체크리스트
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="flex-1 max-w-5xl w-full mx-auto px-4 py-6">
+
+    <!-- =================================================================== -->
+    <!-- TAB 1: 전체 일정 & 도보 (ITINERARY & WALKING TRACKER)                -->
+    <!-- =================================================================== -->
+    <section id="tab-itinerary" class="tab-panel space-y-5">
+      <!-- Core Walking Rules Banner -->
+      <div class="bg-forest text-white rounded-2xl p-4 sm:p-5 shadow-xs">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2 text-amber-200 text-xs font-semibold uppercase tracking-wider">
+              <i data-lucide="footprints" class="w-4 h-4"></i> 걷기 & 체력 안배 대원칙
+            </div>
+            <h2 class="text-base sm:text-lg font-bold">하루 최대 상한 20,000보 (약 13~14km / 순수 도보 2.5~3시간)</h2>
+            <p class="text-xs sm:text-sm text-stone-200 leading-relaxed">
+              갤럭시 핏/삼성 헬스 목표 알람을 <strong class="text-amber-200">15,000보</strong>로 설정하고, 알람이 울리면 카페 작업 모드로 전환하세요.
+            </p>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 shrink-0 text-xs">
+            <div class="bg-white/10 rounded-xl p-2.5 backdrop-blur-xs">
+              <div class="text-amber-200 font-semibold">도시 이동일</div>
+              <div class="font-bold mt-0.5">10,000~13,000보</div>
+              <div class="text-[11px] text-stone-300 mt-0.5">풀배낭 도보 1시간 내외</div>
+            </div>
+            <div class="bg-white/10 rounded-xl p-2.5 backdrop-blur-xs">
+              <div class="text-amber-200 font-semibold">걷기 & 사색일</div>
+              <div class="font-bold mt-0.5">15,000~20,000보</div>
+              <div class="text-[11px] text-stone-300 mt-0.5">보조백팩 산책 + 카페</div>
+            </div>
+            <div class="bg-white/10 rounded-xl p-2.5 backdrop-blur-xs col-span-2 sm:col-span-1">
+              <div class="text-amber-200 font-semibold">온전한 작업일</div>
+              <div class="font-bold mt-0.5">6,000~9,000보</div>
+              <div class="text-[11px] text-stone-300 mt-0.5">늦잠 아점 → 집중 작업</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- City Filter Chips & Optional Extension Note -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div id="city-filter-container" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
+          <!-- Populated by JS -->
+        </div>
+        <div class="text-xs text-ink-muted bg-sand px-3 py-1.5 rounded-xl flex items-center gap-1.5 shrink-0">
+          <i data-lucide="calendar-plus" class="w-3.5 h-3.5 text-terracotta"></i>
+          <span>12/15(화) 복귀 원할 시 <strong>경주·부산·통영 중 2박</strong> 추가 연장 가능 (19박 20일)</span>
+        </div>
+      </div>
+
+      <!-- 18-Day Schedule Cards -->
+      <div id="itinerary-list" class="space-y-3">
+        <!-- Populated by JS -->
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- TAB 2: 교통편 예매 관리 (TRANSPORT BOOKING MANAGER)                 -->
+    <!-- =================================================================== -->
+    <section id="tab-transport" class="tab-panel hidden space-y-5">
+      <!-- Transport Summary & Key Tips Banner -->
+      <div class="bg-forest text-white rounded-2xl p-4 sm:p-5 shadow-xs space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div>
+            <div class="flex items-center gap-2 text-amber-200 text-xs font-semibold uppercase tracking-wider">
+              <i data-lucide="train" class="w-4 h-4"></i> 도시 간 이동 8개 구간 예매 트래커
+            </div>
+            <h2 class="text-base sm:text-lg font-bold mt-0.5">기차·버스 예매 정보와 좌석, 결제 금액을 한눈에 정리하세요</h2>
+            <p class="text-xs text-stone-200 mt-1 leading-relaxed">
+              여기서 입력한 예매 상태와 출발·도착 시각은 <strong class="text-amber-200">[1. 전체 일정]</strong> 카드에 자동 표시되며, 결제 금액은 <strong class="text-amber-200">[4. 예산 관리]</strong>의 도시 간 교통비에 자동 합산됩니다.
+            </p>
+          </div>
+          <div class="grid grid-cols-3 gap-2 shrink-0 text-xs">
+            <div class="bg-white/10 rounded-xl p-2.5 backdrop-blur-xs text-center">
+              <div class="text-stone-300 text-[11px]">예매 완료</div>
+              <div id="tr-stat-booked" class="text-base font-bold text-amber-200 mt-0.5">0 / 8</div>
+            </div>
+            <div class="bg-white/10 rounded-xl p-2.5 backdrop-blur-xs text-center">
+              <div class="text-stone-300 text-[11px]">현장 발권</div>
+              <div id="tr-stat-onsite" class="text-base font-bold text-white mt-0.5">0건</div>
+            </div>
+            <div class="bg-white/10 rounded-xl p-2.5 backdrop-blur-xs text-center">
+              <div class="text-stone-300 text-[11px]">예매 결제 합계</div>
+              <div id="tr-stat-cost" class="text-sm sm:text-base font-bold text-amber-200 mt-0.5">0원</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Essential Booking Reminders -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-white/15 text-xs">
+          <div class="bg-white/5 rounded-xl p-2.5">
+            <span class="font-bold text-amber-200">① 12/3 고래불역 당일 경유:</span>
+            <span class="text-stone-200"> 무인역이라 물품보관함이 없으므로, 고래불해변 카페에 음료를 주문하고 배낭을 맡긴 뒤 22코스 초입을 왕복하세요.</span>
+          </div>
+          <div class="bg-white/5 rounded-xl p-2.5">
+            <span class="font-bold text-amber-200">② 부산→통영 (12/10):</span>
+            <span class="text-stone-200"> 노포동이 아닌 <strong>부산서부(사상)시외버스터미널</strong>(지하철 2호선 사상역)에서 출발합니다.</span>
+          </div>
+          <div class="bg-white/5 rounded-xl p-2.5">
+            <span class="font-bold text-amber-200">③ 짐칸 &amp; 선반 수납 팁:</span>
+            <span class="text-stone-200"> 퀘차 MH100 배낭 끈이 걸리지 않도록 가슴·허리 벨트를 버클로 채운 뒤 선반에 올리세요.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status Filter Chips -->
+      <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
+        <button onclick="setTransportStatusFilter('all')" data-trfilter="all" class="tr-filter-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-terracotta text-white shrink-0">전체 (8구간)</button>
+        <button onclick="setTransportStatusFilter('pending')" data-trfilter="pending" class="tr-filter-btn px-3 py-1.5 rounded-full text-xs font-medium bg-white border border-stone-200 text-ink-muted shrink-0">예매 전</button>
+        <button onclick="setTransportStatusFilter('booked')" data-trfilter="booked" class="tr-filter-btn px-3 py-1.5 rounded-full text-xs font-medium bg-white border border-stone-200 text-ink-muted shrink-0">예매 완료</button>
+        <button onclick="setTransportStatusFilter('onsite')" data-trfilter="onsite" class="tr-filter-btn px-3 py-1.5 rounded-full text-xs font-medium bg-white border border-stone-200 text-ink-muted shrink-0">현장 발권</button>
+      </div>
+
+      <!-- 8 Transport Segment Cards -->
+      <div id="transport-list" class="space-y-3.5">
+        <!-- Populated by JS -->
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- TAB 3: 거점별 카페 & 숙소 가이드 (HUBS: CAFES, BOOKSTORES & STAYS)  -->
+    <!-- =================================================================== -->
+    <section id="tab-hubs" class="tab-panel hidden space-y-6">
+      <!-- Booking & Stay Strategy Banner -->
+      <div class="bg-terracotta-soft border border-terracotta/20 rounded-2xl p-4 sm:p-5">
+        <div class="flex items-start gap-3">
+          <div class="p-2 bg-terracotta text-white rounded-xl shrink-0 mt-0.5">
+            <i data-lucide="bed-single" class="w-5 h-5"></i>
+          </div>
+          <div class="space-y-1.5">
+            <h2 class="text-base font-bold text-ink">거점별 예약 숙소 기록 &amp; 노트북 작업 카페 가이드</h2>
+            <ul class="text-xs sm:text-sm text-ink-muted space-y-1 list-disc list-inside leading-relaxed">
+              <li><strong class="text-terracotta">예약 숙소 입력 시 동네 자동 매칭:</strong> 각 거점 카드에 예약한 숙소 이름을 입력하면 네이버 플레이스 기준 법정동·행정동 및 역세권 동네가 자동으로 채워지며, <strong>[1. 전체 일정]</strong> 카드에도 즉시 반영됩니다.</li>
+              <li><strong class="text-ink">작업 카페 5선 기준:</strong> 최근 6개월 검색 데이터에서 좌석 간격·콘센트·1인 작업 편의성·로스터리·독립서점 연계를 검증한 7개 거점별 5곳입니다.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7 City Hubs Grid -->
+      <div id="hubs-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- Haeparang Trail Comparison Section -->
+      <div class="bg-white rounded-2xl border border-stone-200 p-5 space-y-4">
+        <div class="flex items-center gap-2">
+          <i data-lucide="compass" class="w-5 h-5 text-forest"></i>
+          <h3 class="text-base sm:text-lg font-bold text-ink">두루누비 앱 & 해파랑길 코스 비교 가이드</h3>
+        </div>
+        <p class="text-xs sm:text-sm text-ink-muted leading-relaxed">
+          출발 전 와이파이에서 GPX 경로를 미리 받아 <strong>[따라가기]</strong>를 켜고, 숙소 방향으로 걸어오는 <strong>역방향 걷기</strong> 또는 <strong>초입 부분 왕복</strong>을 활용하면 완주 직후 복귀가 훨씬 수월합니다.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+          <!-- 39 vs 40 -->
+          <div class="bg-paper rounded-xl p-4 border border-stone-200/80 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-forest bg-forest-soft px-2.5 py-1 rounded-lg">강릉 구간 비교</span>
+              <span class="text-xs text-ink-muted">11/29(일) 추천</span>
+            </div>
+            <h4 class="font-bold text-sm text-ink">해파랑길 39코스 vs 40코스</h4>
+            <div class="text-xs text-ink-muted space-y-2 leading-relaxed">
+              <p><strong class="text-forest">• 39코스 (12.6km / 약 18,000보 / 추천):</strong> 솔바람다리~허균·허난설헌 기념공원. 안목커피거리, 송정 솔숲(바람 차단), 경포호수를 잇는 평탄한 힐링 코스. 시내 숙소·작업 카페 접근성 최상.</p>
+              <p><strong class="text-ink">• 40코스 (12.8km / 약 18,500보):</strong> 경포~주문진해변. 탁 트이고 고요한 해변 일직선 코스. 완주 후 시내 복귀 버스가 30~40분 걸리므로 <em>사천진~영진~주문진(6~7km)</em>만 끊어 걷기 추천.</p>
+            </div>
+          </div>
+
+          <!-- Goraebul 22 Stopover -->
+          <div class="bg-paper rounded-xl p-4 border border-stone-200/80 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-forest bg-forest-soft px-2.5 py-1 rounded-lg">고래불역 당일 경유</span>
+              <span class="text-xs text-ink-muted">12/03(목) 스톱오버</span>
+            </div>
+            <h4 class="font-bold text-sm text-ink">해파랑길 22코스 초입 부분 왕복</h4>
+            <div class="text-xs text-ink-muted space-y-2 leading-relaxed">
+              <p><strong class="text-forest">• 고래불해변 시점 ~ 백석·금곡해변 방면 왕복 (약 5~6km / 8,000~9,500보):</strong> 고래불역에서 도보 10분 거리인 고래불해변 카페에 메인 배낭을 맡긴 뒤, 시점 스탬프를 찍고 평탄한 해안 데크를 1시간 30분 내외 왕복하고 포항행 열차를 탑승하는 알찬 스톱오버 코스.</p>
+            </div>
+          </div>
+
+          <!-- Gyeongju 11 vs 10 & Namsan -->
+          <div class="bg-paper rounded-xl p-4 border border-stone-200/80 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-forest bg-forest-soft px-2.5 py-1 rounded-lg">경주 구간 비교</span>
+              <span class="text-xs text-ink-muted">12/06(일)~12/07(월) 선택</span>
+            </div>
+            <h4 class="font-bold text-sm text-ink">해파랑길 11·10코스(바다) vs 남산 삼릉·대릉원(시내)</h4>
+            <div class="text-xs text-ink-muted space-y-2 leading-relaxed">
+              <p><strong class="text-forest">• 해파랑길 11코스 부분 걷기 (약 8km / 11,500보 / 추천):</strong> 시내에서 100번 버스로 문무대왕릉 하차 → 전촌용굴 → 감포항까지만 걷기 (전체 15.8km 완주 시 2만보 초과). 10코스 양남 주상절리 파도소리길(5~6km)도 평탄함.</p>
+              <p><strong class="text-ink">• 내륙 숲·고분 산책 대안:</strong> 바다 버스 이동이 부담스러우면 <strong>경주 남산 삼릉 소나무 숲길</strong>이나 <strong>대릉원 돌담길~월정교~교촌마을</strong>을 걸으며 한옥 카페 작업과 연결하기 좋습니다.</p>
+            </div>
+          </div>
+
+          <!-- 1 vs 2 -->
+          <div class="bg-paper rounded-xl p-4 border border-stone-200/80 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-terracotta bg-terracotta-soft px-2.5 py-1 rounded-lg">부산 구간 비교</span>
+              <span class="text-xs text-ink-muted">12/09(수) 추천</span>
+            </div>
+            <h4 class="font-bold text-sm text-ink">해파랑길 1코스 vs 2코스 (부분 걷기)</h4>
+            <div class="text-xs text-ink-muted space-y-2 leading-relaxed">
+              <p><strong class="text-terracotta">• 1코스 (총 17.7km / 완주 시 26,000보 초과):</strong> 오륙도~미포. 초반 이기대 절벽 계단이 가파르므로 <strong>오륙도 시점 스탬프 + 이기대 초입 왕복(5~6km)</strong>만 추천.</p>
+              <p><strong class="text-forest">• 2코스 (총 16.5km / 부분 걷기 추천):</strong> 미포~대변항. <strong>미포~청사포~송정해변(약 5.5km, 8,000보)</strong> 구간은 그린레일웨이 데크로 완만하며, 송정 카페 작업 후 동해선 전철 복귀가 편리함.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- TAB 4: 예산 & 지출 관리 (BUDGET & EXPENSE TRACKER)                  -->
+    <!-- =================================================================== -->
+    <section id="tab-budget" class="tab-panel hidden space-y-6">
+      <!-- Top Budget Summary Cards -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="bg-white rounded-2xl p-4 border border-stone-200">
+          <div class="text-xs text-ink-muted">총 예산 상한선</div>
+          <div class="text-lg sm:text-xl font-bold text-ink mt-1">2,000,000<span class="text-xs font-normal ml-0.5">원</span></div>
+          <div class="text-[11px] text-forest mt-1">여유분 약 38~69만 원 확보</div>
+        </div>
+        <div class="bg-forest text-white rounded-2xl p-4">
+          <div class="text-xs text-stone-300">표준형 권장 예산</div>
+          <div class="text-lg sm:text-xl font-bold mt-1">1,620,000<span class="text-xs font-normal ml-0.5">원</span></div>
+          <div class="text-[11px] text-amber-200 mt-1">절약형: 1,310,000원</div>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-stone-200">
+          <div class="text-xs text-ink-muted">실제 기록된 지출</div>
+          <div id="budget-total-spent" class="text-lg sm:text-xl font-bold text-terracotta mt-1">0<span class="text-xs font-normal ml-0.5">원</span></div>
+          <div id="budget-spent-ratio" class="text-[11px] text-ink-muted mt-1">표준 예산 대비 0%</div>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-stone-200">
+          <div class="text-xs text-ink-muted">표준 예산 잔액</div>
+          <div id="budget-remaining" class="text-lg sm:text-xl font-bold text-forest mt-1">1,620,000<span class="text-xs font-normal ml-0.5">원</span></div>
+          <div class="text-[11px] text-ink-muted mt-1">속초 웰컴빌리지 2박 무료 반영</div>
+        </div>
+      </div>
+
+      <!-- Category Breakdown Table -->
+      <div class="bg-white rounded-2xl border border-stone-200 overflow-hidden">
+        <div class="p-4 sm:p-5 border-b border-stone-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h3 class="font-bold text-base text-ink">항목별 예상 예산 vs 실제 지출 (17박 18일)</h3>
+            <p class="text-xs text-ink-muted mt-0.5">속초 웰컴빌리지 2박 무료 제외(유료 15박) 기준이며, <strong>[거점 숙소]</strong> 및 <strong>[교통편 예매]</strong>에 입력한 결제 금액이 자동 합산됩니다.</p>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs sm:text-sm">
+            <thead>
+              <tr class="bg-sand/60 text-ink-muted border-b border-stone-200">
+                <th class="py-3 px-4 font-semibold">항목</th>
+                <th class="py-3 px-4 font-semibold hidden md:table-cell">산출 기준</th>
+                <th class="py-3 px-4 font-semibold text-right">절약형</th>
+                <th class="py-3 px-4 font-semibold text-right">표준형(권장)</th>
+                <th class="py-3 px-4 font-semibold text-right text-terracotta">실제 지출</th>
+              </tr>
+            </thead>
+            <tbody id="budget-category-tbody" class="divide-y divide-stone-100">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Expense Logger -->
+      <div class="bg-white rounded-2xl border border-stone-200 p-4 sm:p-5 space-y-4">
+        <h3 class="font-bold text-base text-ink flex items-center gap-2">
+          <i data-lucide="plus-circle" class="w-5 h-5 text-terracotta"></i> 지출 내역 간편 기록하기
+        </h3>
+        <form id="expense-form" class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+          <input type="text" id="exp-date" placeholder="날짜 (예: 11/28)" required class="sm:col-span-2 px-3 py-2.5 text-xs sm:text-sm bg-paper border border-stone-200 rounded-xl focus:outline-none focus:border-forest" />
+          <select id="exp-category" class="sm:col-span-3 px-3 py-2.5 text-xs sm:text-sm bg-paper border border-stone-200 rounded-xl focus:outline-none focus:border-forest">
+            <option value="stay">1. 숙박비</option>
+            <option value="intercity">2. 도시 간 교통비</option>
+            <option value="local">3. 시내 교통비</option>
+            <option value="food">4. 식비</option>
+            <option value="cafe">5. 카페·서점비</option>
+            <option value="misc">6. 세탁·온천비</option>
+            <option value="etc">7. 기타 (사전 준비물 등)</option>
+            <option value="reserve">8. 예비비</option>
+          </select>
+          <input type="text" id="exp-desc" placeholder="내용 (예: 포항 호텔잠, 데카트론 배낭·의류)" required class="sm:col-span-4 px-3 py-2.5 text-xs sm:text-sm bg-paper border border-stone-200 rounded-xl focus:outline-none focus:border-forest" />
+          <input type="number" id="exp-amount" placeholder="금액 (원)" min="100" step="100" required class="sm:col-span-2 px-3 py-2.5 text-xs sm:text-sm bg-paper border border-stone-200 rounded-xl focus:outline-none focus:border-forest" />
+          <button type="submit" class="sm:col-span-1 px-4 py-2.5 bg-forest text-white text-xs sm:text-sm font-semibold rounded-xl hover:bg-forest-light transition flex items-center justify-center">
+            추가
+          </button>
+        </form>
+
+        <!-- Expense History List -->
+        <div class="pt-2">
+          <div class="flex items-center justify-between text-xs text-ink-muted mb-2">
+            <span>최근 지출 내역 (<span id="expense-count">0</span>건)</span>
+          </div>
+          <div id="expense-list" class="divide-y divide-stone-100 border border-stone-100 rounded-xl overflow-hidden">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- TAB 5: 패킹 체크리스트 (INTERACTIVE PACKING CHECKLIST)              -->
+    <!-- =================================================================== -->
+    <section id="tab-packing" class="tab-panel hidden space-y-5">
+      <!-- Packing Progress & Weight Reminder -->
+      <div class="bg-white rounded-2xl border border-stone-200 p-4 sm:p-5 space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h2 class="text-base sm:text-lg font-bold text-ink">겨울 3주 배낭 패킹 체크리스트</h2>
+            <p class="text-xs text-ink-muted mt-0.5">목표 배낭 무게: <strong class="text-terracotta">7~8kg 이내</strong> (데카트론 퀘차 MH100 35L + 초경량 보조백팩 10~15L)</p>
+          </div>
+          <div class="text-right">
+            <span id="packing-count-text" class="text-sm font-bold text-forest">0 / 0 완료 (0%)</span>
+          </div>
+        </div>
+        <div class="w-full h-2.5 bg-sand rounded-full overflow-hidden">
+          <div id="packing-progress-bar" class="h-full bg-forest transition-all duration-300 rounded-full" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Search, Tier Filter, and Add Custom Item -->
+      <div class="bg-white rounded-2xl border border-stone-200 p-4 space-y-3">
+        <div class="flex flex-col sm:flex-row gap-2">
+          <div class="relative flex-1">
+            <i data-lucide="search" class="w-4 h-4 text-ink-subtle absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+            <input type="text" id="packing-search" placeholder="준비물 검색 (예: 마그네슘, 충전기, 양말...)" class="w-full pl-9 pr-3 py-2 text-xs sm:text-sm bg-paper border border-stone-200 rounded-xl focus:outline-none focus:border-forest" />
+          </div>
+          <div class="flex gap-1.5 overflow-x-auto no-scrollbar">
+            <button onclick="setPackingTierFilter('all')" data-tier="all" class="tier-btn px-3 py-2 rounded-xl text-xs font-semibold bg-forest text-white">전체</button>
+            <button onclick="setPackingTierFilter('core')" data-tier="core" class="tier-btn px-3 py-2 rounded-xl text-xs font-medium bg-stone-100 text-ink-muted">필수 코어</button>
+            <button onclick="setPackingTierFilter('bonus')" data-tier="bonus" class="tier-btn px-3 py-2 rounded-xl text-xs font-medium bg-stone-100 text-ink-muted">있으면 좋은 꿀템</button>
+            <button onclick="setPackingTierFilter('unchecked')" data-tier="unchecked" class="tier-btn px-3 py-2 rounded-xl text-xs font-medium bg-stone-100 text-ink-muted">미체크만</button>
+          </div>
+        </div>
+
+        <!-- Add Custom Packing Item -->
+        <form id="packing-add-form" class="flex flex-col sm:flex-row gap-2 pt-2 border-t border-stone-100">
+          <select id="new-pack-category" class="px-3 py-2 text-xs bg-paper border border-stone-200 rounded-xl focus:outline-none focus:border-forest">
+            <option value="가방 & 수납">가방 & 수납</option>
+            <option value="디지털 & 작업">디지털 & 작업</option>
+            <option value="촬영 & 기록">촬영 & 기록</option>
+            <option value="겨울 의류 (4~5일 순환)">겨울 의류</option>
+            <option value="영양제 & 풋케어·상비약">영양제 & 상비약</option>
+            <option value="꿀템 (선택)">꿀템 (선택)</option>
+          </select>
+          <input type="text" id="new-pack-label" placeholder="직접 추가할 준비물 입력..." required class="flex-1 px-3 py-2 text-xs sm:text-sm bg-paper border border-stone-200 rounded-xl focus:outline-none focus:border-forest" />
+          <input type="text" id="new-pack-note" placeholder="메모 (선택사항)" class="sm:w-48 px-3 py-2 text-xs sm:text-sm bg-paper border border-stone-200 rounded-xl focus:outline-none focus:border-forest" />
+          <button type="submit" class="px-4 py-2 bg-terracotta text-white text-xs font-semibold rounded-xl hover:bg-terracotta-light transition shrink-0">
+            + 항목 추가
+          </button>
+        </form>
+      </div>
+
+      <!-- Categorized Packing List -->
+      <div id="packing-categories-container" class="space-y-4">
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- Omit / Leave Behind Callout Box -->
+      <div class="bg-sand/90 border border-stone-300/80 rounded-2xl p-5 space-y-3">
+        <div class="flex items-center gap-2 text-ink">
+          <i data-lucide="feather" class="w-5 h-5 text-terracotta"></i>
+          <h3 class="font-bold text-base">가방 무게(7kg 상한)를 지키기 위해 과감히 뺄 것</h3>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 text-xs">
+          <div class="bg-white/80 p-3 rounded-xl border border-stone-200/70">
+            <div class="font-bold text-ink">1. 두꺼운 니트 · 맨투맨 · 청바지</div>
+            <p class="text-ink-muted mt-1 leading-relaxed">부피가 크고 무거우며, 젖거나 빨래했을 때 겨울 숙소에서 이틀이 지나도 마르지 않습니다.</p>
+          </div>
+          <div class="bg-white/80 p-3 rounded-xl border border-stone-200/70">
+            <div class="font-bold text-ink">2. 출발 시 무거운 책 여러 권</div>
+            <p class="text-ink-muted mt-1 leading-relaxed">속초·경주·부산·통영의 독립서점에서 한 권씩 사서 읽고, 완독 후 집으로 택배 부치며 이동하세요.</p>
+          </div>
+          <div class="bg-white/80 p-3 rounded-xl border border-stone-200/70">
+            <div class="font-bold text-ink">3. 본품 화장품 · 샴푸 · 바디워시</div>
+            <p class="text-ink-muted mt-1 leading-relaxed">비즈니스호텔 어메니티를 활용하고, 개인 기초화장품만 공병·샘플 파우치에 소분하세요.</p>
+          </div>
+          <div class="bg-white/80 p-3 rounded-xl border border-stone-200/70">
+            <div class="font-bold text-ink">4. 두꺼운 수건 여러 장</div>
+            <p class="text-ink-muted mt-1 leading-relaxed">숙소 수건을 사용하고, 걷다가 땀 닦을 초경량 스포츠 타월(손수건 크기) 1장만 챙깁니다.</p>
+          </div>
+          <div class="bg-white/80 p-3 rounded-xl border border-stone-200/70">
+            <div class="font-bold text-ink">5. 여분 신발 (슬리퍼 · 추가 운동화)</div>
+            <p class="text-ink-muted mt-1 leading-relaxed">배낭 부피의 주범입니다. 발에 가장 잘 길들여진 쿠션 운동화/트레킹화 딱 한 켤레만 신고 가세요.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-stone-200/80 py-6 px-4 text-center text-xs text-ink-subtle mt-8">
+    <p>도희의 동해·남해 느린 배낭여행 플래너 · 모든 체크 및 메모는 현재 브라우저에 자동 저장됩니다.</p>
+  </footer>
+
+  <!-- Application Data & Logic -->
+  <script>
+    // =========================================================================
+    // 1. INITIAL STATIC DATA (17박 18일 여정, 8개 이동구간, 7개 거점, 예산, 패킹)
+    // =========================================================================
+    const INITIAL_ITINERARY = [
+      { id: "d1", dayNum: 1, date: "11/26 (목)", city: "속초", stayLabel: "속초 1박 (웰컴빌리지)", transport: "서울 출발 → 속초 도착 (웰컴빌리지 체크인)", activity: "여정 시작, 숙소 주변 영랑호·청초호 산책", targetSteps: 8000, dayType: "이동일", transportId: "tr1" },
+      { id: "d2", dayNum: 2, date: "11/27 (금)", city: "속초", stayLabel: "속초 2박 (웰컴빌리지)", transport: "시내버스 / 도보 이동", activity: "영랑호 둘레길 걷기(해파랑 45코스 일부) + 카페 독서·기록", targetSteps: 15000, dayType: "걷기&사색일" },
+      { id: "d3", dayNum: 3, date: "11/28 (토)", city: "강릉", stayLabel: "강릉 1박 (주말 우선예약)", transport: "시외버스 (속초터미널 → 강릉터미널 / 약 1시간)", activity: "아점 후 이동, 교동·명주동 구도심 산책 및 카페 작업", targetSteps: 11000, dayType: "이동일", weekendAlert: true, transportId: "tr2" },
+      { id: "d4", dayNum: 4, date: "11/29 (일)", city: "강릉", stayLabel: "강릉 2박", transport: "시내버스 / 도보 이동", activity: "해파랑길 39코스(안목~송정 솔숲~경포호) 걷기 + 사진 정리", targetSteps: 17500, dayType: "걷기&사색일" },
+      { id: "d5", dayNum: 5, date: "11/30 (월)", city: "강릉", stayLabel: "강릉 3박", transport: "도보 이동 (온전한 작업일)", activity: "늦잠 후 아점 → 로스터리 카페에서 집중 노트북 작업", targetSteps: 7000, dayType: "온전한 작업일" },
+      { id: "d6", dayNum: 6, date: "12/01 (화)", city: "동해", stayLabel: "동해 1박", transport: "동해선 열차 (강릉역 → 묵호역·동해역 / 약 35분)", activity: "오전 열차 이동 후 묵호항 주변 체크인 및 해안 산책", targetSteps: 11000, dayType: "이동일", transportId: "tr3" },
+      { id: "d7", dayNum: 7, date: "12/02 (수)", city: "동해", stayLabel: "동해 2박", transport: "도보 이동", activity: "논골담길~묵호등대(해파랑 34코스 일부) 걷기 + 바다 카페 작업", targetSteps: 14000, dayType: "걷기&사색일" },
+      { id: "d8", dayNum: 8, date: "12/03 (목)", city: "포항", stayLabel: "포항 1박 (고래불역 당일 경유 후 체크인)", transport: "동해선 열차 (동해역 → 고래불역 하차·경유 → 포항역 도착)", activity: "동해역 출발 → 고래불역 하차 후 카페에 배낭 맡기고 해파랑길 22코스 초입 왕복(약 1시간 30분) → 오후 동해선 열차로 포항역 이동 및 숙소 체크인", targetSteps: 14500, dayType: "이동일", transportId: "tr4" },
+      { id: "d9", dayNum: 9, date: "12/04 (금)", city: "포항", stayLabel: "포항 2박 (주말 우선예약)", transport: "도보 / 시내버스 (정비 & 빨래일)", activity: "포항 철길숲 2시간 평지 산책 + 코인빨래 + 카페 작업", targetSteps: 13000, dayType: "걷기&사색일", weekendAlert: true },
+      { id: "d10", dayNum: 10, date: "12/05 (토)", city: "경주", stayLabel: "경주 1박 (주말 우선예약)", transport: "기차(무궁화/ITX) 또는 시외버스 (포항 → 경주 / 약 35분)", activity: "아점 후 내륙 이동, 황오동·교동 체크인 및 골목 산책", targetSteps: 11000, dayType: "이동일", weekendAlert: true, transportId: "tr5" },
+      { id: "d11", dayNum: 11, date: "12/06 (일)", city: "경주", stayLabel: "경주 2박", transport: "시내버스(100번 감포행) 또는 남산 방면 이동", activity: "① 바다 코스 선택 시: 시내버스(100번)로 문무대왕릉 하차 → 해파랑길 11코스 후반부(전촌용굴~감포항 약 8km / 11,500보) 부분 걷기 + 감포항 카페 휴식\n② 내륙 숲길 선택 시: 경주 남산 삼릉 소나무 숲길 산책 + 한옥 카페 작업", targetSteps: 14000, dayType: "걷기&사색일" },
+      { id: "d12", dayNum: 12, date: "12/07 (월)", city: "경주", stayLabel: "경주 3박", transport: "도보 이동 (온전한 작업일)", activity: "대릉원 돌담길~월정교~교촌마을 가벼운 산책 + 한옥 카페에서 연말 기록 정리", targetSteps: 8000, dayType: "온전한 작업일" },
+      { id: "d13", dayNum: 13, date: "12/08 (화)", city: "부산", stayLabel: "부산 1박", transport: "KTX/SRT (경주역 → 부산역 30분) 또는 시외버스 (1시간)", activity: "오전 이동 후 초량동(부산역) 또는 전포동 숙소 체크인", targetSteps: 12000, dayType: "이동일", transportId: "tr6" },
+      { id: "d14", dayNum: 14, date: "12/09 (수)", city: "부산", stayLabel: "부산 2박", transport: "지하철 / 시내버스 / 도보", activity: "영도 흰여울길 또는 해파랑 2코스(미포~송정) 걷기 + 카페 작업", targetSteps: 16000, dayType: "걷기&사색일" },
+      { id: "d15", dayNum: 15, date: "12/10 (목)", city: "통영", stayLabel: "통영 1박", transport: "시외버스 (부산서부[사상]터미널 → 통영터미널 / 약 1시간 30분)", activity: "아점 후 남해안 이동, 항남동·봉평동 체크인 및 항구 산책", targetSteps: 11000, dayType: "이동일", transportId: "tr7" },
+      { id: "d16", dayNum: 16, date: "12/11 (금)", city: "통영", stayLabel: "통영 2박 (주말 우선예약)", transport: "시내버스 / 도보 이동", activity: "이순신 공원 해안 데크길 걷기 + 미수동·봉평동 카페 작업", targetSteps: 15000, dayType: "걷기&사색일", weekendAlert: true },
+      { id: "d17", dayNum: 17, date: "12/12 (토)", city: "통영", stayLabel: "통영 3박 (주말 우선예약)", transport: "도보 이동 (마무리 정리일)", activity: "서피랑 언덕 산책 + 독립서점 방문 및 여정 기록 최종 갈무리", targetSteps: 10000, dayType: "온전한 작업일", weekendAlert: true },
+      { id: "d18", dayNum: 18, date: "12/13 (일)", city: "서울 복귀", stayLabel: "여정 종료 (귀가)", transport: "고속버스 (통영종합버스터미널 → 서울경부/남부 / 약 4시간 10분)", activity: "느긋한 아점 후 오후 우등고속버스 탑승, 서울 귀환", targetSteps: 6000, dayType: "이동일", transportId: "tr8" }
+    ];
+
+    const INITIAL_TRANSPORT = [
+      { id: "tr1", legNum: 1, date: "11/26 (목)", route: "서울 → 속초", mode: "고속·시외버스", duration: "약 2시간 30분", defaultPlatform: "코버스 / 티머니GO", tip: "서울경부(고속) 또는 동서울터미널 출발 → 속초 웰컴빌리지 체크인 시간에 맞춰 오전/낮 편 예매" },
+      { id: "tr2", legNum: 2, date: "11/28 (토)", route: "속초 → 강릉", mode: "시외버스", duration: "약 1시간", defaultPlatform: "버스타고 / 티머니GO", tip: "속초시외버스터미널 → 강릉시외·고속버스터미널(홍제동). 배차가 잦아 아점 후 11시~13시 사이 이동 추천" },
+      { id: "tr3", legNum: 3, date: "12/01 (화)", route: "강릉 → 동해(묵호)", mode: "동해선 열차 (누리로/ITX)", duration: "약 35분", defaultPlatform: "코레일톡", tip: "강릉역 출발 → 묵호역(또는 동해역) 하차. 동해선 열차는 배차 간격이 길어 코레일톡 사전 예매 필수" },
+      { id: "tr4", legNum: 4, date: "12/03 (목)", route: "동해역 → 고래불역(경유) → 포항역", mode: "동해선 열차 2구간 분리 예매", duration: "약 2시간 10분 (탑승합계)", defaultPlatform: "코레일톡", tip: "① 동해역→고래불역(약 1시간 30분) 하차 후 카페에 배낭 맡기고 해파랑 22코스 초입 왕복 → ② 고래불역→포항역(약 40분) 오후 열차 탑승. 코레일톡에서 두 구간 시간을 넉넉히(3시간 이상 간격) 맞춰 예매하세요" },
+      { id: "tr5", legNum: 5, date: "12/05 (토)", route: "포항 → 경주", mode: "기차(무궁화/ITX) 또는 시외버스", duration: "약 35~40분", defaultPlatform: "코레일톡 / 버스타고", tip: "숙소가 포항시외버스터미널 인근이라면 포항역까지 올라가지 않고 터미널에서 경주행 시외버스를 타는 게 훨씬 편합니다" },
+      { id: "tr6", legNum: 6, date: "12/08 (화)", route: "경주 → 부산", mode: "KTX/SRT 또는 시외버스", duration: "KTX 30분 / 버스 1시간", defaultPlatform: "코레일톡 / SRT / 버스타고", tip: "경주역(구 신경주역) KTX 이용 시 부산역 바로 도착, 경주시외버스터미널 이용 시 노포동(1호선 종점) 도착" },
+      { id: "tr7", legNum: 7, date: "12/10 (목)", route: "부산 → 통영", mode: "시외버스", duration: "약 1시간 30분", defaultPlatform: "버스타고 / 티머니GO", tip: "반드시 지하철 2호선 사상역과 연결된 '부산서부시외버스터미널'에서 탑승하세요 (배차 약 20~30분 간격)" },
+      { id: "tr8", legNum: 8, date: "12/13 (일)", route: "통영 → 서울", mode: "고속버스 (우등)", duration: "약 4시간 10분", defaultPlatform: "코버스 / 티머니GO", tip: "통영종합버스터미널(광도면 죽림리) → 서울경부(강남) 또는 서울남부터미널 직행 우등버스" }
+    ];
+
+    const CITY_HUBS = [
+      {
+        id: "hub_sokcho",
+        cityKey: "속초",
+        city: "1. 속초 (2박)",
+        dates: "11/26(목) ~ 11/28(토)",
+        stayArea: "영랑동·장사동(영랑호 인근) · 청초호 일대",
+        stayTip: "웰컴빌리지 2박 확보 완료! 영랑호와 청초호 수변길을 걸으며 여행의 첫 호흡을 여는 시작점입니다.",
+        recommendedStays: [
+          { name: "웰컴빌리지", note: "11/26~28 2박 확정 (숙박비 절감 거점)" }
+        ],
+        spots: [
+          { name: "칠성조선소 살롱 (교동·청초호)", areaTags: ["교동", "청초", "조양", "중앙", "동명", "영랑"], desc: "옛 조선소 개조 복합문화공간. 층고가 높고 좌석 간격이 넓어 청초호를 보며 노트북 작업하기 쾌적." },
+          { name: "문우당서림 (중앙동)", areaTags: ["중앙", "동명", "교동", "영랑", "청초"], desc: "속초 대표 로컬 서점. 아늑한 열람 테이블에서 책 큐레이션을 보고 문장 필사·태블릿 정리에 적합." },
+          { name: "보사노바 커피로스터스 속초점 (조양동·속초해변)", areaTags: ["조양", "청초", "엑스포", "고속터미널"], desc: "소나무 숲과 바다 뷰가 어우러진 대형 로스터리. 2~3층 넓은 테이블과 콘센트 좌석 구비." },
+          { name: "드롭탑 속초엑스포점 (조양동·청초호)", areaTags: ["조양", "청초", "엑스포", "고속터미널"], desc: "엑스포타워 인근 대형 프랜차이즈 매장으로 1인 작업자·카공족 좌석과 콘센트가 넉넉함." },
+          { name: "카페 긷 (노학동)", areaTags: ["노학", "영랑", "장사"], desc: "설악산과 울산바위 능선이 보이는 차분한 공간. 평일 오전 한적하게 사색하고 글쓰기 좋은 곳." },
+          { name: "바다정원 카페 (토성면·영랑호 북단)", areaTags: ["영랑", "장사", "토성", "동명"], desc: "영랑호 북쪽 해안도로와 맞닿아 있어 웰컴빌리지에서 산책 겸 이동해 통창 바다를 보며 작업하기 좋음." },
+          { name: "동아서점 (수복로·교동)", areaTags: ["교동", "중앙", "동명", "시외버스터미널"], desc: "속초의 오랜 독립서점. 조용한 분위기에서 책을 고르고 인근 카페에서 기록을 정리하는 동선에 최적." }
+        ]
+      },
+      {
+        id: "hub_gangneung",
+        cityKey: "강릉",
+        city: "2. 강릉 (3박)",
+        dates: "11/28(토) ~ 12/01(화)",
+        stayArea: "교동(강릉역) · 명주동·옥천동 구도심",
+        stayTip: "11/28(토) 주말 우선 예약 필요. 해변가 대신 구도심·강릉역 인근에 잡아야 조용하고 가성비가 좋습니다.",
+        recommendedStays: [
+          { name: "강릉게스트하우스 중앙점", note: "네이버 예약 · 1인실 4만 원대 · 명주동/중앙시장 도보권" },
+          { name: "마커스 호스텔", note: "네이버 예약 · 1인실 운영 · 강릉역 인근, 1층 카페 작업 겸용" },
+          { name: "강릉역게스트하우스", note: "네이버 예약 · 3~4만 원대 실속 1인실 · 동해선 기차 이동 최적" }
+        ],
+        spots: [
+          { name: "명주배롱 (명주동 구도심)", areaTags: ["명주", "성남", "옥천", "임당", "홍제", "중앙", "터미널"], desc: "적산가옥을 고친 고요한 구도심 카페. 해변 카페거리보다 차분해 이어폰 끼고 한 해 기록 정리에 최적." },
+          { name: "시만차 림 (교동·강릉역)", areaTags: ["교동", "포남", "강릉역", "옥천"], desc: "강릉역과 가까운 교동 2층의 차분한 찻집 겸 카페. 조용한 분위기에서 차 한 잔과 함께 집중하기 좋음." },
+          { name: "스타벅스 강릉교동점 (교동·강릉역)", areaTags: ["교동", "포남", "강릉역"], desc: "강릉역 도보권 매장으로 콘센트 좌석과 넓은 테이블이 있어 기차 이동 전후 노트북 작업하기 가장 안정적." },
+          { name: "강다방 이야기공장 (옥천동·강릉역)", areaTags: ["옥천", "교동", "포남", "강릉역", "성남", "명주"], desc: "강릉역과 중앙시장 사이 골목의 로컬 독립서점. 여행 에세이와 지역 기록물을 보며 사색하기 좋은 공간." },
+          { name: "보사노바 커피로스터스 강릉점 (견소동·안목해변)", areaTags: ["견소", "안목", "송정", "강문", "초당"], desc: "안목 커피거리 대표 대형 로스터리. 층별 좌석이 넓고 콘센트가 있어 해파랑 39코스 전후 작업 추천." },
+          { name: "테라로사 경포호수점 (저동·경포호)", areaTags: ["저동", "경포", "초당", "교동"], desc: "벽면을 채운 서가와 우드톤 대형 테이블이 도서관 같은 분위기. 호수 산책 후 독서·글쓰기에 안성맞춤." },
+          { name: "보헤미안 박이추커피 사천진점 (사천면)", areaTags: ["사천", "경포", "초당"], desc: "바다를 마주한 긴 테이블과 깊은 핸드드립 커피. 혼자 책 읽고 사진 정리하는 손님이 자연스러운 곳." },
+          { name: "초당119 로스터리 (초당동)", areaTags: ["초당", "강문", "송정", "경포"], desc: "초당동 순두부마을 인근의 한적한 로스터리 카페. 해변 인파를 피해 차분히 노트북을 펼치기 좋음." }
+        ]
+      },
+      {
+        id: "hub_donghae",
+        cityKey: "동해",
+        city: "3. 동해 (2박)",
+        dates: "12/01(화) ~ 12/03(목)",
+        stayArea: "발한동(묵호역) · 묵호진동 해안 인근",
+        stayTip: "평일(화·수) 체류라 비수기 가성비 비즈니스 숙소 선택지가 넓습니다.",
+        recommendedStays: [
+          { name: "묵호역 인근 로컬 비즈니스호텔/모텔", note: "평일 기준 3.5~4.5만 원대, 묵호항·논골담길 도보 접근성 우수" }
+        ],
+        spots: [
+          { name: "카라멜스테이션 (발한동·묵호역)", areaTags: ["발한", "묵호", "논골"], desc: "옛 여관을 개조한 복합문화공간 카페. 묵호역 도보 5분 거리로 조용하고 감각적인 분위기에서 작업 가능." },
+          { name: "아폰트 커피 (발한동·묵호역)", areaTags: ["발한", "묵호", "논골"], desc: "100평 규모의 낡은 건물을 재생한 대형 카페. 뚜벅이 짐 보관 지원 및 넓은 좌석 배치가 장점." },
+          { name: "라운드어바웃 (발한동·묵호항)", areaTags: ["발한", "묵호", "논골"], desc: "묵호항 로터리 인근 감성 로스터리. 고소한 흑임자 커피와 함께 차분하게 노트북 작업하기 좋은 공간." },
+          { name: "카페 한결 (어달동·어달해변)", areaTags: ["어달", "대진", "망상", "묵호"], desc: "도째비골 지나 어달항 초입의 통창 오션뷰 카페. 탁 트인 동해 바다를 보며 오래 머물기 좋음." },
+          { name: "스타벅스 동해DT점 (천곡동)", areaTags: ["천곡", "동해역", "동해터미널", "송정"], desc: "동해 시내 중심가 매장으로 안정적인 와이파이, 넉넉한 콘센트, 긴 영업시간이 필요할 때 가장 든든한 선택." },
+          { name: "투썸플레이스 동해천곡점 (천곡동)", areaTags: ["천곡", "동해역", "동해터미널", "송정"], desc: "동해시청·터미널 인근 넓은 2층 매장으로 장시간 타이핑이나 영상 백업 작업에 쾌적한 좌석 제공." },
+          { name: "어달리 카페 (어달동·해안도로)", areaTags: ["어달", "대진", "망상"], desc: "어달해변 파도가 바로 보이는 아늑한 카페. 해안도로 산책 후 조용히 다이어리를 정리하기 좋음." }
+        ]
+      },
+      {
+        id: "hub_pohang",
+        cityKey: "포항",
+        city: "4. 포항 (2박)",
+        dates: "12/03(목) ~ 12/05(토)",
+        stayArea: "대잠동·효자동(철길숲) · 상도동(시외버스터미널)",
+        stayTip: "12/3(목) 고래불역 경유 후 포항역 도착 체크인! 12/4(금) 주말 숙박 방어가 필요하며 대잠동·터미널 인근이 경주행 환승에도 유리합니다.",
+        recommendedStays: [
+          { name: "호텔잠", note: "네이버 예약 · 대잠동/철길숲 인근 · 4~5만 원대, 스타일러·욕조 객실" },
+          { name: "호텔플레이,", note: "네이버 예약 연동 · 터미널 상권 인근 · 5만 원 이하 비즈니스형" },
+          { name: "넘버25 호텔 대잠", note: "네이버 예약 · 깔끔한 프랜차이즈 비즈니스호텔 · 4만 원 후반~5만 원선" }
+        ],
+        spots: [
+          { name: "달팽이책방 (남구 효자동·철길숲)", areaTags: ["효자", "대잠", "철길숲", "이동"], desc: "포항 대표 독립서점이자 북카페. 큐레이션 도서와 음료를 곁들이며 조용히 사색·글쓰기 최고의 공간." },
+          { name: "카페담 철길점 (남구 대잠동·철길숲)", areaTags: ["대잠", "상도", "죽도", "터미널", "효자", "철길숲"], desc: "철길숲 입구 2층 규모 카페. 산책로 바로 옆이라 2시간 걷기 직후 노트북 작업 루틴을 잇기 편리함." },
+          { name: "스타벅스 포항터미널점 (남구 상도동)", areaTags: ["대잠", "상도", "죽도", "터미널"], desc: "시외버스터미널 바로 옆이라 대잠동·상도동 숙소에서 걸어서 노트북 작업 및 출발 전 대기하기 최상." },
+          { name: "폴리커피 (남구 이동·대잠동 인근)", areaTags: ["이동", "대잠", "효자", "철길숲"], desc: "대잠동·이동 주거지 인근의 차분한 로스터리 카페. 조용한 동네 분위기 속에서 집중 작업하기 좋음." },
+          { name: "오브레멘 (북구 두호동·영일대)", areaTags: ["두호", "영일대", "학산", "항구", "포항역", "흥해"], desc: "영일대 해변 앞 4층 규모 대형 카페. 도서·엽서 공간과 넓은 통창 좌석이 있어 평일·오전 작업 쾌적." },
+          { name: "헤이안 (북구 두호동·영일대)", areaTags: ["두호", "영일대", "학산", "항구", "포항역", "흥해"], desc: "바다 전망과 넓은 테이블, 깔끔한 동선을 갖춘 대표 베이커리 카페. 일출·바다 보며 사진 백업하기 좋음." },
+          { name: "슈슈모아 (북구 우현동)", areaTags: ["우현", "학산", "두호", "영일대", "포항역"], desc: "차분한 우드 가구와 2층 공간이 어우러진 베이커리 카페. 시끄럽지 않은 분위기에서 오래 머물기 적합." }
+        ]
+      },
+      {
+        id: "hub_gyeongju",
+        cityKey: "경주",
+        city: "5. 경주 (3박)",
+        dates: "12/05(토) ~ 12/08(화)",
+        stayArea: "황오동 · 성건동 · 교동 · 황남동 외곽",
+        stayTip: "12/5(토) 주말 우선 예약 필요! 일~월요일은 평일 요금으로 내려가므로 토요일 1박만 서둘러 확보하면 됩니다.",
+        recommendedStays: [
+          { name: "황오동·성건동 게스트하우스 1인실", note: "토요일 4~5만 원대, 평일 3.5만 원대 · 황리단길 소음을 피해 조용히 머물기 좋음" }
+        ],
+        spots: [
+          { name: "어서어서 & 소소밀밀 (황남동·교동)", areaTags: ["황남", "교동", "인왕", "황리단", "대릉원"], desc: "경주 대표 독립서점과 인근 그림책·북카페 동선. 한옥의 고즈넉한 분위기 속에서 글쓰기와 필사 추천." },
+          { name: "노워즈 no words (황남동·황오동 경계)", areaTags: ["황남", "황오", "성동", "경주역", "노서"], desc: "군더더기 없는 미니멀 공간의 로스터리. 황리단길 메인 인파를 피해 진한 라떼와 집중 작업 가능." },
+          { name: "카페 연화 (황오동)", areaTags: ["황오", "성동", "경주역", "인왕"], desc: "황오동 골목의 차분한 한옥 카페. 평일 낮 한적한 마당과 창가 자리에서 연말 회고 기록을 정리하기 좋음." },
+          { name: "오아르미술관 카페 (황오동·노서동)", areaTags: ["노서", "황오", "성건", "터미널", "황남"], desc: "전시 공간과 함께 운영하는 감각적인 카페. 층고가 높고 여백이 많아 시각적 영감을 얻으며 작업 가능." },
+          { name: "브레스커피웍스 (성건동·황성동권)", areaTags: ["성건", "터미널", "황성", "노서"], desc: "넓은 공간과 탄탄한 로스팅 커피를 갖춘 대형 카페. 3박 중 '온전한 작업일'에 반나절 머물기 좋은 곳." },
+          { name: "가배향주 (황남동·대릉원 후문)", areaTags: ["황남", "교동", "황리단", "대릉원"], desc: "대릉원 돌담길 인근의 정갈한 한옥 드립커피 전문점. 차분한 다다미·우드 좌석에서 필사하기 좋음." },
+          { name: "스타벅스 경주터미널점 (노서동·성건동)", areaTags: ["노서", "성건", "터미널", "황오"], desc: "시외·고속버스터미널 바로 앞 매장으로 성건동·노서동 숙소 이용 시 가장 편하게 작업할 수 있는 공간." }
+        ]
+      },
+      {
+        id: "hub_busan",
+        cityKey: "부산",
+        city: "6. 부산 (2박)",
+        dates: "12/08(화) ~ 12/10(목)",
+        stayArea: "초량동(부산역) · 전포동(서면역)",
+        stayTip: "평일(화·수) 2박 일정이라 주말 할증 없이 원하는 1인실 숙소를 여유롭고 저렴하게 예약할 수 있습니다!",
+        recommendedStays: [
+          { name: "호스텔 싱글싱글", note: "네이버 예약 · 초량동(부산역) · 전 객실 1인실 전용 4만 원대, 매우 조용함" },
+          { name: "원웨이 게스트하우스 부산", note: "네이버 예약 · 초량동 역세권 · 깔끔한 개별 싱글룸 4~5만 원대" },
+          { name: "게스트하우스코리아부산역", note: "네이버 예약 · 초량동 · 3~4만 원대 실속 1인실, 영도 버스 환승 편리" }
+        ],
+        spots: [
+          { name: "모모스커피 영도 로스터리&커피바 (영도구 봉래동)", areaTags: ["초량", "부산역", "영도", "봉래", "남포", "중앙"], desc: "옛 물류창고를 개조한 압도적 개방감의 스페셜티 공간. 항구 풍경을 보며 1인 바 좌석에서 작업 추천." },
+          { name: "손목서가 (영도구 영선동·흰여울문화마을)", areaTags: ["영도", "영선", "흰여울", "남포", "중앙", "초량", "부산역"], desc: "절벽 위 작은 독립서점 겸 카페. 평일 오전·이른 오후에 들러 바다를 내려다보며 짧은 단상 기록." },
+          { name: "브라운핸즈 백제 (동구 초량동·부산역)", areaTags: ["초량", "부산역", "중앙"], desc: "옛 백제병원 건물을 살린 초량동 대표 카페. 부산역 숙소에서 걸어서 5분 거리로 여유롭게 작업하기 좋음." },
+          { name: "오프커스 베이커리 카페 (부산진구 전포동)", areaTags: ["전포", "서면", "부전", "부산진"], desc: "1~4층 규모 대형 로스터리로 3층에 노트북 작업 전용 테이블과 콘센트가 잘 갖춰져 눈치 없이 작업 가능." },
+          { name: "프루토프루타 전포 (부산진구 전포동)", areaTags: ["전포", "서면", "부전", "부산진"], desc: "전포 카페거리 안쪽의 차분한 공간. 평일 낮 한적한 창가 자리에서 노트북 작업과 휴식을 겸하기 좋음." },
+          { name: "노씨커피 NOC (수영구 광안동·수영역)", areaTags: ["광안", "수영", "민락", "해운대"], desc: "2~3층 창가 좌석에서 광안리 방면 뷰와 콘센트를 동시에 누릴 수 있는 부산 대표 카공·작업 친화 카페." },
+          { name: "딥슬립커피 (수영구 수영동·수영역)", areaTags: ["수영", "광안", "민락"], desc: "화이트·우드톤의 매우 차분한 드립커피 전문점. 혼자 책 읽거나 노트북 작업하는 손님이 많아 조용함." }
+        ]
+      },
+      {
+        id: "hub_tongyeong",
+        cityKey: "통영",
+        city: "7. 통영 (3박)",
+        dates: "12/10(목) ~ 12/13(일)",
+        stayArea: "항남동·서호동(구도심) · 북신동·죽림(터미널)",
+        stayTip: "12/11(금)~12/12(토) 주말 2박 우선 예약 필요. 구도심 항남동에 묵으면 서피랑·이순신공원·봉평동 책방을 걸어 다닐 수 있습니다.",
+        recommendedStays: [
+          { name: "새미게스트하우스", note: "네이버 예약 · 항남동 구도심 · 3~4만 원대 1인 객실, 서피랑·책방 도보권" },
+          { name: "모다게스트하우스", note: "네이버 예약 연동 · 항남동 · 5만 원 이하 개별 1인실, 중앙시장·바다 인접" },
+          { name: "서피랑 게스트하우스", note: "네이버 예약 · 서피랑 언덕 초입 · 4만 원대 안팎의 조용한 골목 숙소" }
+        ],
+        spots: [
+          { name: "포지티브즈 통영 (중앙동·동피랑 입구)", areaTags: ["중앙", "항남", "서호", "태평", "동피랑", "서피랑"], desc: "따뜻한 우드톤 감성의 브런치·디저트 카페. 항남동·서호동 숙소에서 걸어가 통영 구도심을 보며 기록 정리." },
+          { name: "카페 마당 (중앙동·강구안 인근)", areaTags: ["중앙", "항남", "서호", "태평", "강구안"], desc: "120년 된 적산가옥을 재해석한 차분한 공간. 구도심 숙소 인근에서 고즈넉하게 사색하고 글쓰기 좋은 곳." },
+          { name: "동피랑 99계단 로스터리 (태평동·구도심)", areaTags: ["태평", "중앙", "항남", "서호", "강구안"], desc: "강구안 항구가 내려다보이는 조용한 로스터리. 구도심 산책 동선 중 노트북을 펼치기 알맞은 곳." },
+          { name: "봄날의책방 (봉평동)", areaTags: ["봉평", "미수", "도남", "항남", "서호"], desc: "전혁림미술관 옆 고즈넉한 독립서점. 다다미방·마루 공간에서 여행의 마지막 문장을 갈무리하기 최고." },
+          { name: "카페 오도카니 (산양읍 남망산로)", areaTags: ["산양", "미수", "봉평", "도남"], desc: "미수동·봉평동 인근 고요한 항구 앞 카페. 잔잔한 통영 바다를 보며 조용히 한 해를 정리하기 좋음." },
+          { name: "스타벅스 통영죽림점 (광도면 죽림리)", areaTags: ["죽림", "광도", "통영터미널", "북신", "무전"], desc: "통영종합버스터미널 및 내죽도 수변공원 인근. 서울행 버스 타기 전 마지막 노트북 작업과 충전 기지." },
+          { name: "투썸플레이스 통영죽림점 (광도면 죽림리)", areaTags: ["죽림", "광도", "통영터미널", "북신", "무전"], desc: "죽림 해안도로 인근 넓은 2층 매장으로 터미널·북신동 숙소 이용 시 쾌적하게 노트북 작업 가능." }
+        ]
+      }
+    ];
+
+    // =========================================================================
+    // 1.5 NAVER-BASED NEIGHBORHOOD LOOKUP DICTIONARY FOR BOOKED STAYS
+    // =========================================================================
+    const NAVER_STAY_DIRECTORY = [
+      // 속초
+      { keywords: ["웰컴빌리지", "welcalm"], area: "강원 속초시 영랑동 / 장사동 (영랑호 수변 권역)" },
+      { keywords: ["속초", "영랑"], area: "강원 속초시 영랑동 · 교동 권역" },
+      { keywords: ["청초", "조양", "엑스포"], area: "강원 속초시 조양동 (청초호 · 고속터미널 권역)" },
+      { keywords: ["동명", "중앙시장", "시외버스터미널"], area: "강원 속초시 동명동 · 중앙동 권역" },
+      // 강릉
+      { keywords: ["강릉게스트하우스", "중앙점"], area: "강원 강릉시 성남동 · 명주동 (중앙시장 · 구도심 권역)" },
+      { keywords: ["마커스", "강릉역", "포남"], area: "강원 강릉시 교동 · 포남동 (강릉역 역세권)" },
+      { keywords: ["교동"], area: "강원 강릉시 교동 (강릉역 인근)" },
+      { keywords: ["명주", "옥천", "임당", "홍제"], area: "강원 강릉시 명주동 · 옥천동 (구도심 · 터미널 권역)" },
+      { keywords: ["경포", "초당", "안목", "강문", "송정"], area: "강원 강릉시 초당동 · 견소동 · 강문동 (해변 권역)" },
+      // 동해
+      { keywords: ["묵호", "발한", "논골", "도째비"], area: "강원 동해시 발한동 · 묵호진동 (묵호역 · 묵호항 권역)" },
+      { keywords: ["어달", "대진", "망상"], area: "강원 동해시 어달동 · 망상동 (해안도로 권역)" },
+      { keywords: ["천곡", "동해역", "동해터미널"], area: "강원 동해시 천곡동 · 송정동 (시내 중심 권역)" },
+      // 포항
+      { keywords: ["호텔잠", "호텔플레이", "넘버25", "대잠"], area: "경북 포항시 남구 대잠동 (철길숲 · 시외버스터미널 권역)" },
+      { keywords: ["상도", "죽도", "터미널"], area: "경북 포항시 남구 상도동 · 죽도동 (시외버스터미널 · 죽도시장 권역)" },
+      { keywords: ["효자"], area: "경북 포항시 남구 효자동 (포항 철길숲 남단 권역)" },
+      { keywords: ["영일대", "두호", "학산"], area: "경북 포항시 북구 두호동 · 항구동 (영일대해수욕장 권역)" },
+      { keywords: ["포항역", "흥해"], area: "경북 포항시 북구 흥해읍 이인리 (KTX 포항역 권역)" },
+      // 경주
+      { keywords: ["황오", "경주역", "성동"], area: "경북 경주시 황오동 · 성동동 (구 경주역 · 시내 구도심 권역)" },
+      { keywords: ["성건", "터미널", "노서"], area: "경북 경주시 성건동 · 노서동 (고속·시외버스터미널 권역)" },
+      { keywords: ["황남", "황리단", "교동", "인왕"], area: "경북 경주시 황남동 · 교동 (대릉원 · 교촌마을 권역)" },
+      { keywords: ["신경주", "건천"], area: "경북 경주시 건천읍 화천리 (KTX 경주역 권역)" },
+      // 부산
+      { keywords: ["싱글싱글", "원웨이", "코리아부산역", "초량", "부산역"], area: "부산 동구 초량동 (KTX 부산역 역세권)" },
+      { keywords: ["전포", "서면", "부전"], area: "부산 부산진구 전포동 · 부전동 (서면역 1·2호선 환승 권역)" },
+      { keywords: ["영도", "흰여울", "남포", "중앙동"], area: "부산 영도구 영선동 · 중구 중앙동 (남포·영도 권역)" },
+      { keywords: ["광안", "수영", "민락"], area: "부산 수영구 광안동 · 민락동 (광안리 · 수영역 권역)" },
+      { keywords: ["사상", "괘법"], area: "부산 사상구 괘법동 (부산서부시외버스터미널 권역)" },
+      // 통영
+      { keywords: ["새미", "모다", "서피랑", "항남", "서호", "중앙동", "태평"], area: "경남 통영시 항남동 · 서호동 · 중앙동 (강구안 · 서피랑 구도심 권역)" },
+      { keywords: ["봉평", "미수", "도남"], area: "경남 통영시 봉평동 · 미수동 (미륵도 해안 · 책방 권역)" },
+      { keywords: ["북신", "무전"], area: "경남 통영시 북신동 · 무전동 (통영 신시가지 권역)" },
+      { keywords: ["죽림", "통영터미널", "광도"], area: "경남 통영시 광도면 죽림리 (통영종합버스터미널 권역)" }
+    ];
+
+    function detectNaverNeighborhood(stayName, cityKey) {
+      const cleaned = (stayName || "").trim();
+      if (!cleaned) return "";
+      const lower = cleaned.toLowerCase().replace(/\s+/g, "");
+
+      for (const entry of NAVER_STAY_DIRECTORY) {
+        if (entry.keywords.some(kw => lower.includes(kw.toLowerCase().replace(/\s+/g, "")))) {
+          return entry.area;
+        }
+      }
+
+      const cityFallbackMap = {
+        "속초": "강원 속초시 (네이버 지도 기준 권역 자동 분류)",
+        "강릉": "강원 강릉시 (네이버 지도 기준 권역 자동 분류)",
+        "동해": "강원 동해시 (네이버 지도 기준 권역 자동 분류)",
+        "포항": "경북 포항시 (네이버 지도 기준 권역 자동 분류)",
+        "경주": "경북 경주시 (네이버 지도 기준 권역 자동 분류)",
+        "부산": "부산광역시 (네이버 지도 기준 권역 자동 분류)",
+        "통영": "경남 통영시 (네이버 지도 기준 권역 자동 분류)"
+      };
+      return cityFallbackMap[cityKey] || `${cityKey} 일대`;
+    }
+
+    const BUDGET_CATEGORIES = [
+      { id: "stay", name: "1. 숙박비 (15박)", desc: "속초 2박 무료 제외 / 평일 3.5~4.5만, 주말 5~6.5만", frugal: 600000, standard: 710000 },
+      { id: "intercity", name: "2. 도시 간 교통비", desc: "고속·시외버스 + 동해선 열차 3회(고래불 경유 포함) + KTX 1회", frugal: 135000, standard: 150000 },
+      { id: "local", name: "3. 시내 교통비", desc: "시내버스·지하철 18일 (도보 위주 이동)", frugal: 35000, standard: 50000 },
+      { id: "food", name: "4. 식비 (18일)", desc: "아점 1끼(국밥·백반) + 저녁 간단식 (일 1.8~2.3만)", frugal: 325000, standard: 410000 },
+      { id: "cafe", name: "5. 카페·서점비 (18일)", desc: "매일 노트북 작업 음료 1~2잔 + 독립서점 책 구매", frugal: 150000, standard: 200000 },
+      { id: "misc", name: "6. 세탁·온천비", desc: "코인빨래 3회 + 동해·포항 찜질·온천 등 생활 관리비", frugal: 35000, standard: 50000 },
+      { id: "etc", name: "7. 기타 (사전 준비물 등)", desc: "데카트론 배낭·의류·마그네슘 등 출발 전 준비물 및 기타 구매", frugal: 0, standard: 0 },
+      { id: "reserve", name: "8. 예비비", desc: "상비약·택시 이용·돌발 상황 대비 비상 예산", frugal: 30000, standard: 50000 }
+    ];
+
+    const INITIAL_PACKING = [
+      // 가방 & 수납
+      { id: "p1", category: "가방 & 수납", tier: "core", label: "메인 배낭 (데카트론 퀘차 MH100 35L)", note: "탑로딩 구조이므로 파우치 구획 정리 필수 (목표 총중량 7kg 이하)", checked: false },
+      { id: "p2", category: "가방 & 수납", tier: "core", label: "배낭 전용 레인커버 (20~40L용)", note: "MH100 별매품. 동해안 겨울비·진눈깨비 대비용", checked: false },
+      { id: "p3", category: "가방 & 수납", tier: "core", label: "초경량 접이식 보조백팩 (10~15L)", note: "숙소나 카페에 메인 배낭을 두고 해파랑길 걸을 때 사용", checked: false },
+      { id: "p4", category: "가방 & 수납", tier: "core", label: "의류 압축 파우치 2개 & 가젯 파우치 1개", note: "탑로딩 배낭 내부에서 옷과 전자기기가 섞이지 않도록 층별 수납", checked: false },
+      { id: "p5", category: "가방 & 수납", tier: "core", label: "지퍼백(중·대형) 3~4장 & 접이식 장바구니", note: "젖은 빨래 분리, 남은 간식 보관, 저녁 마트 장보기용", checked: false },
+
+      // 디지털 & 작업
+      { id: "p6", category: "디지털 & 작업", tier: "core", label: "노트북 (또는 태블릿+키보드) & 도톰한 완충 슬리브", note: "MH100 등판에 노트북 보호 패드가 없으므로 완충 슬리브 필수", checked: false },
+      { id: "p7", category: "디지털 & 작업", tier: "core", label: "65W 이상 GaN 멀티 충전기 1개", note: "노트북·스마트폰·보조배터리를 하나로 동시 충전", checked: false },
+      { id: "p8", category: "디지털 & 작업", tier: "core", label: "C타입 충전 케이블 2개 (2m 1개, 1m 1개)", note: "카페 콘센트가 멀리 있을 때를 대비한 2m 롱케이블 포함", checked: false },
+      { id: "p9", category: "디지털 & 작업", tier: "core", label: "10,000mAh 보조배터리 & 무선 이어폰", note: "겨울 바닷바람에 스마트폰·갤럭시 핏 급방전 방지", checked: false },
+      { id: "p10", category: "디지털 & 작업", tier: "core", label: "SD카드 리더기 & 외장 SSD (또는 고용량 USB)", note: "카페에서 촬영본 즉시 백업 및 용량 비우기", checked: false },
+
+      // 촬영 & 기록
+      { id: "p11", category: "촬영 & 기록", tier: "core", label: "DJI 오즈모 액션 5 프로 + 미니 삼각대(그립)", note: "해파랑길 도보 영상 및 풍경 기록용", checked: false },
+      { id: "p12", category: "촬영 & 기록", tier: "core", label: "액션캠 여분 배터리 2개 & 메모리카드", note: "영하권 바람에는 배터리가 빨리 닳으니 외투 안주머니에 보관", checked: false },
+      { id: "p13", category: "촬영 & 기록", tier: "core", label: "필사·회고용 노트 1권 (A5/B6) & 쥬스업 펜 2자루", note: "리필심과 인덱스 플래그 함께 수납, 밤마다 한 해 회고 기록", checked: false },
+      { id: "p14", category: "촬영 & 기록", tier: "core", label: "코리아둘레길(해파랑길) 스탬프북", note: "두루누비 앱 '따라가기' GPX 사전 다운로드와 병행", checked: false },
+
+      // 겨울 의류 (4~5일 순환)
+      { id: "p15", category: "겨울 의류 (4~5일 순환)", tier: "core", label: "데카트론 기능성 하프집 긴팔티 2벌", note: "속건성 소재로 땀 배출 우수 및 숙소 손빨래 후 하룻밤 건조", checked: false },
+      { id: "p16", category: "겨울 의류 (4~5일 순환)", tier: "core", label: "플리스(후리스) 1벌 & 방풍 바람막이(또는 경량패딩) 1벌", note: "플리스 위에 방풍 겉옷을 겹쳐 입어야 겨울 바닷바람 차단", checked: false },
+      { id: "p17", category: "겨울 의류 (4~5일 순환)", tier: "core", label: "기모 트레킹 팬츠 1벌 & 편한 조거/와이드 팬츠 1벌", note: "걷기용 방풍 바지 + 카페 작업·장거리 버스용 편한 바지 조합", checked: false },
+      { id: "p18", category: "겨울 의류 (4~5일 순환)", tier: "core", label: "발열 하의(레깅스형 내의) 1~2벌", note: "유독 추운 해변 산책일에 바지 안에 겹쳐 입는 보온용", checked: false },
+      { id: "p19", category: "겨울 의류 (4~5일 순환)", tier: "core", label: "속옷 4~5세트 & 쿠션 등산/러닝 양말 4켤레", note: "하루 2만 보 도보 시 발바닥 물집 방지를 위해 쿠션 양말 필수", checked: false },
+      { id: "p20", category: "겨울 의류 (4~5일 순환)", tier: "core", label: "방한 소품 (넥워머, 비니/귀도리, 스마트폰 터치 장갑)", note: "목도리보다 가볍고 바람을 완벽히 막아주는 넥워머 추천", checked: false },
+      { id: "p21", category: "겨울 의류 (4~5일 순환)", tier: "core", label: "발에 길들여진 쿠션 운동화 또는 트레킹화 1켤레", note: "새 신발 절대 금지, 여분 신발 없이 한 켤레로 완주", checked: false },
+
+      // 영양제 & 풋케어·상비약
+      { id: "p22", category: "영양제 & 풋케어·상비약", tier: "core", label: "리퀴드 마그네슘 샷 + 종합비타민·비타민D (3주 치)", note: "장거리 도보 후 근육 경련 예방 및 피로 회복", checked: false },
+      { id: "p23", category: "영양제 & 풋케어·상비약", tier: "core", label: "동전파스 & 하이드로콜로이드 물집 방지 밴드(듀오덤)", note: "발뒤꿈치가 쓸릴 기미가 보이면 물집 잡히기 전에 미리 부착", checked: false },
+      { id: "p24", category: "영양제 & 풋케어·상비약", tier: "core", label: "상비약 파우치 (소염진통제, 감기약, 소화제, 지사제)", note: "근육통 겸용 이부프로펜 계열 진통제 포함", checked: false },
+      { id: "p25", category: "영양제 & 풋케어·상비약", tier: "core", label: "소분용 기초화장품 & 칫솔·치약", note: "비즈니스호텔 어메니티(샴푸·바디워시·드라이기) 활용", checked: false },
+
+      // 꿀템 (선택)
+      { id: "p26", category: "꿀템 (선택)", tier: "bonus", label: "초경량 접이식 노트북 거치대 (100g 미만)", note: "카페에서 매일 2~3시간 작업 시 목·승모근 통증 예방", checked: false },
+      { id: "p27", category: "꿀템 (선택)", tier: "bonus", label: "휴대용 소형 스탬프 인주 & 물티슈", note: "야외 스탬프함 인주가 말라 있을 때 선명하게 찍기 위한 꿀템", checked: false },
+      { id: "p28", category: "꿀템 (선택)", tier: "bonus", label: "종이형/시트형 세탁 세제 5~6장 & S자 고리", note: "숙소 세면대에서 기능성 티셔츠·양말 손빨래할 때 유용", checked: false },
+      { id: "p29", category: "꿀템 (선택)", tier: "bonus", label: "입욕제 2~3개 (또는 족욕용 소금 소분)", note: "욕조 있는 숙소 묵는 날 다리 피로를 녹이는 최고의 보상", checked: false },
+      { id: "p30", category: "꿀템 (선택)", tier: "bonus", label: "귀마개 & 수면안대", note: "방음이 다소 약한 지방 로컬 모텔·게스트하우스 숙면 보장", checked: false },
+      { id: "p31", category: "꿀템 (선택)", tier: "bonus", label: "스틱형 멀티밤(보습제) & 핸드크림", note: "겨울 바닷바람에 트는 입술과 손등 수시 보습", checked: false },
+      { id: "p32", category: "꿀템 (선택)", tier: "bonus", label: "초경량 스포츠 타월 (손수건 크기) 1장", note: "두꺼운 수건 대신 걷다가 땀 닦고 금방 말리는 용도", checked: false }
+    ];
+
+    // =========================================================================
+    // 2. APPLICATION STATE & STORAGE
+    // =========================================================================
+    const STORAGE_KEY = "dohee_slow_trip_2026_v4";
+    const SHEETS_URL_KEY = "dohee_slow_trip_sheets_webhook_v1";
+    // ▼ 여기에 발급받은 Google Apps Script 웹 앱 URL을 붙여넣으면, 모바일/미리보기에서 새로고침해도 영구 연동됩니다!
+    const DEFAULT_SHEETS_WEBHOOK_URL = "";
+
+    const GOOGLE_APPS_SCRIPT_TEMPLATE = `function doPost(e) {
+  var lock = LockService.getScriptLock();
+  lock.tryLock(10000);
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var payload = JSON.parse(e.postData.contents);
+    var sheetsData = payload.sheets || {};
+
+    Object.keys(sheetsData).forEach(function(sheetName) {
+      var rows = sheetsData[sheetName];
+      if (!rows || !rows.length) return;
+      var sheet = ss.getSheetByName(sheetName) || ss.insertSheet(sheetName);
+      sheet.clearContents();
+      sheet.getRange(1, 1, rows.length, rows[0].length).setValues(rows);
+      sheet.getRange(1, 1, 1, rows[0].length).setFontWeight("bold").setBackground("#EBF1EE");
+    });
+
+    var metaSheet = ss.getSheetByName("_RAW_STATE") || ss.insertSheet("_RAW_STATE");
+    metaSheet.clearContents();
+    metaSheet.getRange(1, 1).setValue(JSON.stringify(payload.rawState || {}));
+    metaSheet.getRange(1, 2).setValue(new Date().toISOString());
+
+    return ContentService.createTextOutput(JSON.stringify({ ok: true }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ ok: false, error: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function doGet(e) {
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var metaSheet = ss.getSheetByName("_RAW_STATE");
+    var raw = metaSheet ? metaSheet.getRange(1, 1).getValue() : "";
+    var state = raw ? JSON.parse(raw) : null;
+    return ContentService.createTextOutput(JSON.stringify({ ok: true, rawState: state }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ ok: false, error: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}`;
+
+    function getDefaultState() {
+      return {
+        activeTab: "itinerary",
+        cityFilter: "전체",
+        transportStatusFilter: "all",
+        packingTierFilter: "all",
+        packingSearch: "",
+        itineraryMeta: {},
+        bookedStays: {
+          hub_sokcho: {
+            booked: true,
+            name: "웰컴빌리지",
+            area: "강원 속초시 영랑동 / 장사동 (영랑호 수변 권역)",
+            cost: 0,
+            memo: "11/26~28 2박 무료 확보 완료"
+          }
+        },
+        transportBookings: {},
+        expenses: [],
+        packing: JSON.parse(JSON.stringify(INITIAL_PACKING))
+      };
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return getDefaultState();
+        const parsed = JSON.parse(raw);
+        return {
+          ...getDefaultState(),
+          ...parsed,
+          bookedStays: { ...getDefaultState().bookedStays, ...(parsed.bookedStays || {}) },
+          transportBookings: parsed.transportBookings || {},
+          itineraryMeta: parsed.itineraryMeta || {},
+          expenses: Array.isArray(parsed.expenses) ? parsed.expenses : [],
+          packing: Array.isArray(parsed.packing) && parsed.packing.length ? parsed.packing : JSON.parse(JSON.stringify(INITIAL_PACKING))
+        };
+      } catch (e) {
+        return getDefaultState();
+      }
+    }
+
+    let state = loadState();
+    let sheetsSyncTimer = null;
+
+    function getSheetsWebhookUrl() {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const urlParam = params.get("sheet");
+        if (urlParam && urlParam.startsWith("http")) {
+          try { localStorage.setItem(SHEETS_URL_KEY, urlParam); } catch (e) {}
+          return urlParam;
+        }
+      } catch (e) {}
+
+      try {
+        return localStorage.getItem(SHEETS_URL_KEY) || DEFAULT_SHEETS_WEBHOOK_URL || "";
+      } catch (e) {
+        return DEFAULT_SHEETS_WEBHOOK_URL || "";
+      }
+    }
+
+    function copyMagicBookmarkLink() {
+      const webhookUrl = getSheetsWebhookUrl();
+      if (!webhookUrl) {
+        showToast("먼저 위 입력칸에 구글 시트 웹 앱 URL을 저장해 주세요.");
+        return;
+      }
+      const baseUrl = window.location.href.split("?")[0].split("#")[0];
+      const magicUrl = `${baseUrl}?sheet=${encodeURIComponent(webhookUrl)}`;
+
+      const tempInput = document.createElement("input");
+      tempInput.value = magicUrl;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand("copy");
+      document.body.removeChild(tempInput);
+
+      if (baseUrl.startsWith("about:") || baseUrl.startsWith("blob:") || baseUrl.includes("googleusercontent")) {
+        showToast("링크가 복사되었습니다! 단, 제미나이 미리보기 주소는 외부에서 열리지 않으니 index.html을 Netlify Drop에 올린 주소에서 복사해 주세요.");
+      } else {
+        showToast("시트 연동이 고정된 모바일 전용 링크가 복사되었습니다!");
+      }
+    }
+
+    function updateSheetsIndicator(status, text) {
+      const dot = document.getElementById("sheets-status-dot");
+      const label = document.getElementById("sheets-status-label");
+      const modalStatus = document.getElementById("sheets-modal-status");
+      const url = getSheetsWebhookUrl();
+
+      if (!url) {
+        if (dot) dot.className = "w-2 h-2 rounded-full bg-stone-300";
+        if (label) label.textContent = "시트 미연결";
+        if (modalStatus) modalStatus.textContent = "현재 연결된 URL이 없습니다.";
+        return;
+      }
+
+      if (status === "syncing") {
+        if (dot) dot.className = "w-2 h-2 rounded-full bg-amber-400 animate-pulse";
+        if (label) label.textContent = text || "시트 저장중...";
+      } else if (status === "error") {
+        if (dot) dot.className = "w-2 h-2 rounded-full bg-terracotta";
+        if (label) label.textContent = text || "연동 오류";
+      } else {
+        if (dot) dot.className = "w-2 h-2 rounded-full bg-emerald-500";
+        if (label) label.textContent = text || "시트 연동됨";
+      }
+
+      if (modalStatus) {
+        modalStatus.innerHTML = `<span class="text-forest font-semibold">연결 완료:</span> ${url.slice(0, 42)}...`;
+      }
+    }
+
+    function buildSheetsPayload() {
+      const itineraryRows = [["일차", "날짜", "거점도시", "완료여부", "목표걸음", "실제걸음", "핵심활동", "메모"]];
+      INITIAL_ITINERARY.forEach(item => {
+        const meta = state.itineraryMeta[item.id] || {};
+        itineraryRows.push([
+          `DAY ${item.dayNum}`,
+          item.date,
+          item.city,
+          meta.completed ? "완료" : "예정",
+          item.targetSteps,
+          meta.actualSteps || "",
+          item.activity.replace(/\n/g, " "),
+          meta.note || ""
+        ]);
+      });
+
+      const transportRows = [["구간", "날짜", "이동경로", "교통수단", "예매상태", "예매처", "출발시각", "도착시각", "좌석/예약번호", "결제금액(원)"]];
+      INITIAL_TRANSPORT.forEach(tr => {
+        const bk = state.transportBookings[tr.id] || {};
+        const statusLabel = bk.status === "booked" ? "예매완료" : (bk.status === "onsite" ? "현장발권" : "예매전");
+        transportRows.push([
+          `구간 ${tr.legNum}`,
+          tr.date,
+          tr.route,
+          tr.mode,
+          statusLabel,
+          bk.platform || tr.defaultPlatform,
+          bk.depTime || "",
+          bk.arrTime || "",
+          bk.seat || "",
+          Number(bk.cost) || 0
+        ]);
+      });
+
+      const stayRows = [["거점", "체류일정", "확정여부", "예약숙소명", "네이버기준동네", "숙박결제금액(원)", "메모"]];
+      CITY_HUBS.forEach(hub => {
+        const st = state.bookedStays[hub.id] || {};
+        stayRows.push([
+          hub.city,
+          hub.dates,
+          st.booked ? "확정" : "미확정",
+          st.name || "",
+          st.area || "",
+          Number(st.cost) || 0,
+          st.memo || ""
+        ]);
+      });
+
+      const expenseRows = [["날짜", "카테고리", "내용", "금액(원)"]];
+      const catNameMap = Object.fromEntries(BUDGET_CATEGORIES.map(c => [c.id, c.name]));
+      state.expenses.forEach(exp => {
+        expenseRows.push([
+          exp.date,
+          catNameMap[exp.category] || exp.category,
+          exp.desc,
+          Number(exp.amount) || 0
+        ]);
+      });
+
+      const packingRows = [["카테고리", "구분", "준비물", "체크여부", "메모"]];
+      state.packing.forEach(p => {
+        packingRows.push([
+          p.category,
+          p.tier === "core" ? "필수코어" : "꿀템",
+          p.label,
+          p.checked ? "O" : "",
+          p.note || ""
+        ]);
+      });
+
+      return {
+        sheets: {
+          "1_일정_도보": itineraryRows,
+          "2_교통편_예매": transportRows,
+          "3_거점별_숙소": stayRows,
+          "4_지출_내역": expenseRows,
+          "5_패킹_체크리스트": packingRows
+        },
+        rawState: state
+      };
+    }
+
+    async function pushToGoogleSheets(manual = false) {
+      const url = getSheetsWebhookUrl();
+      if (!url) {
+        if (manual) showToast("먼저 구글 시트 웹 앱 URL을 입력해 주세요.");
+        return;
+      }
+      updateSheetsIndicator("syncing", "시트 동기화중...");
+      try {
+        const payload = buildSheetsPayload();
+        await fetch(url, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payload)
+        });
+        updateSheetsIndicator("ok", "시트 반영완료");
+        if (manual) showToast("구글 시트로 현재 데이터를 전송했습니다.");
+      } catch (err) {
+        updateSheetsIndicator("error", "전송 실패");
+        if (manual) showToast("시트 전송 중 오류가 발생했습니다.");
+      }
+    }
+
+    async function pullFromGoogleSheets(silent = false) {
+      const url = getSheetsWebhookUrl();
+      if (!url) return;
+      updateSheetsIndicator("syncing", "불러오는중...");
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data && data.ok && data.rawState) {
+          state = {
+            ...getDefaultState(),
+            ...data.rawState,
+            bookedStays: { ...getDefaultState().bookedStays, ...(data.rawState.bookedStays || {}) },
+            transportBookings: data.rawState.transportBookings || {},
+            itineraryMeta: data.rawState.itineraryMeta || {},
+            expenses: Array.isArray(data.rawState.expenses) ? data.rawState.expenses : [],
+            packing: Array.isArray(data.rawState.packing) && data.rawState.packing.length ? data.rawState.packing : JSON.parse(JSON.stringify(INITIAL_PACKING))
+          };
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          } catch (e) {}
+          renderAll();
+          updateSheetsIndicator("ok", "시트 연동됨");
+          if (!silent) showToast("구글 시트의 최신 데이터를 불러왔습니다.");
+        } else {
+          updateSheetsIndicator("ok", "시트 연동됨");
+          if (!silent) showToast("시트에 아직 저장된 데이터가 없어 현재 상태를 유지합니다.");
+        }
+      } catch (err) {
+        updateSheetsIndicator("ok", "시트 연동됨");
+        if (!silent) showToast("시트에서 불러오지 못했습니다. 웹 앱 권한 설정을 확인해 주세요.");
+      }
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {}
+      updateHeaderStats();
+
+      if (getSheetsWebhookUrl()) {
+        updateSheetsIndicator("syncing", "대기중...");
+        clearTimeout(sheetsSyncTimer);
+        sheetsSyncTimer = setTimeout(() => {
+          pushToGoogleSheets(false);
+        }, 1500);
+      }
+    }
+
+    // =========================================================================
+    // 3. UI UTILITIES (TOAST, CONFIRM, MODALS, TABS)
+    // =========================================================================
+    function showToast(message) {
+      const container = document.getElementById("toast-container");
+      if (!container) return;
+      const el = document.createElement("div");
+      el.className = "bg-forest text-white text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-lg flex items-center gap-2 pointer-events-auto transition-opacity duration-300";
+      el.innerHTML = `<span>${message}</span>`;
+      container.appendChild(el);
+      setTimeout(() => {
+        el.style.opacity = "0";
+        setTimeout(() => el.remove(), 300);
+      }, 2400);
+    }
+
+    function showConfirm(title, message, onConfirm) {
+      const modal = document.getElementById("confirm-modal");
+      document.getElementById("confirm-title").textContent = title;
+      document.getElementById("confirm-message").textContent = message;
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+
+      const okBtn = document.getElementById("confirm-ok-btn");
+      const cancelBtn = document.getElementById("confirm-cancel-btn");
+
+      const cleanup = () => {
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+        okBtn.onclick = null;
+        cancelBtn.onclick = null;
+      };
+
+      okBtn.onclick = () => {
+        cleanup();
+        onConfirm();
+      };
+      cancelBtn.onclick = cleanup;
+    }
+
+    function confirmResetAll() {
+      showConfirm(
+        "플래너 데이터 초기화",
+        "입력한 숙소 예약, 교통편, 일정 메모, 지출 내역, 체크리스트가 모두 초기 상태로 되돌아갑니다. 계속할까요?",
+        () => {
+          state = getDefaultState();
+          saveState();
+          renderAll();
+          showToast("모든 데이터가 초기 상태로 복원되었습니다.");
+        }
+      );
+    }
+
+    function switchTab(tabId) {
+      state.activeTab = tabId;
+      saveState();
+
+      document.querySelectorAll(".tab-panel").forEach(panel => {
+        panel.classList.toggle("hidden", panel.id !== `tab-${tabId}`);
+      });
+
+      document.querySelectorAll(".tab-btn").forEach(btn => {
+        const isActive = btn.dataset.tab === tabId;
+        if (isActive) {
+          btn.className = "tab-btn active shrink-0 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-1.5 bg-forest text-white shadow-xs";
+        } else {
+          btn.className = "tab-btn shrink-0 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium transition flex items-center gap-1.5 text-ink-muted hover:bg-sand/80";
+        }
+      });
+    }
+
+    // =========================================================================
+    // 4. SHEETS & BACKUP MODALS
+    // =========================================================================
+    function openSheetsModal() {
+      const modal = document.getElementById("sheets-modal");
+      const input = document.getElementById("sheets-webhook-input");
+      const codeBox = document.getElementById("apps-script-code-box");
+      input.value = getSheetsWebhookUrl();
+      codeBox.value = GOOGLE_APPS_SCRIPT_TEMPLATE;
+      updateSheetsIndicator();
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeSheetsModal() {
+      const modal = document.getElementById("sheets-modal");
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    }
+
+    function saveSheetsWebhookUrl() {
+      const input = document.getElementById("sheets-webhook-input");
+      const url = (input.value || "").trim();
+      try {
+        if (url) {
+          localStorage.setItem(SHEETS_URL_KEY, url);
+        } else {
+          localStorage.removeItem(SHEETS_URL_KEY);
+        }
+      } catch (e) {}
+      updateSheetsIndicator();
+      if (url) {
+        pushToGoogleSheets(true);
+      } else {
+        showToast("시트 연동 URL이 해제되었습니다.");
+      }
+    }
+
+    function copyAppsScriptCode() {
+      const codeBox = document.getElementById("apps-script-code-box");
+      codeBox.select();
+      document.execCommand("copy");
+      showToast("Apps Script 코드가 클립보드에 복사되었습니다.");
+    }
+
+    let currentBackupFormat = "summary";
+    function openBackupModal() {
+      const modal = document.getElementById("backup-modal");
+      setBackupFormat("summary");
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeBackupModal() {
+      const modal = document.getElementById("backup-modal");
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    }
+
+    function setBackupFormat(fmt) {
+      currentBackupFormat = fmt;
+      const textarea = document.getElementById("backup-textarea");
+      const btnSum = document.getElementById("btn-fmt-summary");
+      const btnJson = document.getElementById("btn-fmt-json");
+
+      if (fmt === "json") {
+        btnJson.className = "px-3 py-2 rounded-xl text-xs font-medium bg-forest text-white";
+        btnSum.className = "px-3 py-2 rounded-xl text-xs font-medium bg-stone-100 text-ink-muted";
+        textarea.value = JSON.stringify(state, null, 2);
+      } else {
+        btnSum.className = "px-3 py-2 rounded-xl text-xs font-medium bg-forest text-white";
+        btnJson.className = "px-3 py-2 rounded-xl text-xs font-medium bg-stone-100 text-ink-muted";
+        const stayLines = CITY_HUBS.map(h => {
+          const s = state.bookedStays[h.id] || {};
+          return `- ${h.city}: ${s.booked ? "[확정]" : "[미확정]"} ${s.name || "미정"} (${s.area || h.stayArea})`;
+        }).join("\n");
+        const checkedCount = state.packing.filter(p => p.checked).length;
+        textarea.value = `[도희의 17박 18일 동해·남해 느린 배낭여행 요약]\n\n■ 거점별 숙소 현황\n${stayLines}\n\n■ 패킹 준비 현황: ${checkedCount} / ${state.packing.length} 완료\n■ 기록된 지출 합계: ${calculateTotalSpent().toLocaleString()}원`;
+      }
+    }
+
+    function copyBackupText() {
+      const textarea = document.getElementById("backup-textarea");
+      textarea.select();
+      document.execCommand("copy");
+      showToast("클립보드에 복사되었습니다.");
+    }
+
+    // =========================================================================
+    // 5. TAB 1: ITINERARY RENDERING & INTERACTIONS
+    // =========================================================================
+    function renderCityFilters() {
+      const container = document.getElementById("city-filter-container");
+      if (!container) return;
+      const cities = ["전체", "속초", "강릉", "동해", "포항", "경주", "부산", "통영", "서울 복귀"];
+      container.innerHTML = cities.map(city => {
+        const active = state.cityFilter === city;
+        return `<button onclick="setCityFilter('${city}')" class="px-3 py-1.5 rounded-full text-xs font-semibold shrink-0 transition ${
+          active ? "bg-forest text-white" : "bg-white border border-stone-200 text-ink-muted hover:border-forest"
+        }">${city}</button>`;
+      }).join("");
+    }
+
+    function setCityFilter(city) {
+      state.cityFilter = city;
+      saveState();
+      renderCityFilters();
+      renderItinerary();
+    }
+
+    function toggleDayCompleted(dayId) {
+      const meta = state.itineraryMeta[dayId] || {};
+      meta.completed = !meta.completed;
+      state.itineraryMeta[dayId] = meta;
+      saveState();
+      renderItinerary();
+    }
+
+    function updateDaySteps(dayId, val) {
+      const meta = state.itineraryMeta[dayId] || {};
+      meta.actualSteps = val ? Number(val) : "";
+      state.itineraryMeta[dayId] = meta;
+      saveState();
+    }
+
+    function updateDayNote(dayId, val) {
+      const meta = state.itineraryMeta[dayId] || {};
+      meta.note = val;
+      state.itineraryMeta[dayId] = meta;
+      saveState();
+    }
+
+    function renderItinerary() {
+      const container = document.getElementById("itinerary-list");
+      if (!container) return;
+
+      const filtered = state.cityFilter === "전체"
+        ? INITIAL_ITINERARY
+        : INITIAL_ITINERARY.filter(item => item.city === state.cityFilter);
+
+      container.innerHTML = filtered.map(item => {
+        const meta = state.itineraryMeta[item.id] || {};
+        const hub = CITY_HUBS.find(h => h.cityKey === item.city);
+        const stayInfo = hub ? (state.bookedStays[hub.id] || {}) : {};
+        const trInfo = item.transportId ? (state.transportBookings[item.transportId] || {}) : null;
+
+        let stayBadgeHtml = `<span class="text-[11px] text-ink-muted">${item.stayLabel}</span>`;
+        if (hub && stayInfo.name) {
+          stayBadgeHtml = `<span class="inline-flex items-center gap-1 text-[11px] font-semibold text-forest bg-forest-soft px-2 py-0.5 rounded-md">숙소: ${stayInfo.name}${stayInfo.area ? ` (${stayInfo.area.split("(")[0].trim()})` : ""}</span>`;
+        }
+
+        let trBadgeHtml = "";
+        if (trInfo && trInfo.status === "booked") {
+          trBadgeHtml = `<span class="inline-flex items-center gap-1 text-[11px] font-semibold text-terracotta bg-terracotta-soft px-2 py-0.5 rounded-md">예매완료 ${trInfo.depTime ? `(${trInfo.depTime} 출발)` : ""}</span>`;
+        }
+
+        const typeBadgeColor = item.dayType === "이동일"
+          ? "bg-amber-50 text-amber-800 border-amber-200"
+          : item.dayType === "걷기&사색일"
+            ? "bg-forest-soft text-forest border-forest/20"
+            : "bg-stone-100 text-ink-muted border-stone-200";
+
+        return `
+          <div class="bg-white rounded-2xl border ${meta.completed ? "border-forest/40 bg-forest-soft/15" : "border-stone-200"} p-4 sm:p-5 transition">
+            <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+              <div class="space-y-1.5 flex-1">
+                <div class="flex flex-wrap items-center gap-2">
+                  <button onclick="toggleDayCompleted('${item.id}')" class="w-5 h-5 rounded-md border flex items-center justify-center transition ${
+                    meta.completed ? "bg-forest border-forest text-white" : "border-stone-300 bg-white hover:border-forest"
+                  }" title="일정 완료 체크">
+                    ${meta.completed ? '<i data-lucide="check" class="w-3.5 h-3.5"></i>' : ""}
+                  </button>
+                  <span class="text-xs font-bold text-forest">DAY ${item.dayNum}</span>
+                  <span class="text-xs font-semibold text-ink">${item.date}</span>
+                  <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-sand text-ink">${item.city}</span>
+                  <span class="px-2 py-0.5 rounded-md text-[11px] font-medium border ${typeBadgeColor}">${item.dayType}</span>
+                  ${item.weekendAlert ? '<span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-terracotta-soft text-terracotta">주말 숙박 우선예약</span>' : ""}
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2 pt-0.5">
+                  ${stayBadgeHtml}
+                  ${trBadgeHtml}
+                </div>
+
+                <p class="text-xs text-ink-muted pt-1 flex items-center gap-1.5">
+                  <i data-lucide="navigation" class="w-3.5 h-3.5 text-forest shrink-0"></i>
+                  <span>${item.transport}</span>
+                </p>
+                <p class="text-xs sm:text-sm text-ink leading-relaxed whitespace-pre-line pt-0.5">${item.activity}</p>
+              </div>
+
+              <!-- Steps & Memo Controls -->
+              <div class="sm:w-56 shrink-0 bg-paper rounded-xl p-3 border border-stone-200/70 space-y-2">
+                <div class="flex items-center justify-between text-[11px]">
+                  <span class="text-ink-muted">목표 상한</span>
+                  <span class="font-bold text-forest">${item.targetSteps.toLocaleString()}보</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <input
+                    type="number"
+                    placeholder="실제 걸음 수"
+                    value="${meta.actualSteps || ""}"
+                    onchange="updateDaySteps('${item.id}', this.value)"
+                    class="w-full px-2.5 py-1.5 text-xs bg-white border border-stone-200 rounded-lg focus:outline-none focus:border-forest"
+                  />
+                  <span class="text-[11px] text-ink-muted shrink-0">보</span>
+                </div>
+                <input
+                  type="text"
+                  placeholder="오늘의 짧은 메모..."
+                  value="${(meta.note || "").replace(/"/g, "&quot;")}"
+                  onchange="updateDayNote('${item.id}', this.value)"
+                  class="w-full px-2.5 py-1.5 text-xs bg-white border border-stone-200 rounded-lg focus:outline-none focus:border-forest"
+                />
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    // =========================================================================
+    // 6. TAB 2: TRANSPORT BOOKINGS
+    // =========================================================================
+    function setTransportStatusFilter(status) {
+      state.transportStatusFilter = status;
+      saveState();
+      document.querySelectorAll(".tr-filter-btn").forEach(btn => {
+        const active = btn.dataset.trfilter === status;
+        btn.className = active
+          ? "tr-filter-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-terracotta text-white shrink-0"
+          : "tr-filter-btn px-3 py-1.5 rounded-full text-xs font-medium bg-white border border-stone-200 text-ink-muted shrink-0";
+      });
+      renderTransport();
+    }
+
+    function updateTransportField(trId, field, value) {
+      const bk = state.transportBookings[trId] || { status: "pending" };
+      bk[field] = field === "cost" ? (value ? Number(value) : 0) : value;
+      state.transportBookings[trId] = bk;
+      saveState();
+      renderTransportStats();
+      renderBudget();
+      renderItinerary();
+    }
+
+    function renderTransportStats() {
+      let booked = 0;
+      let onsite = 0;
+      let totalCost = 0;
+      INITIAL_TRANSPORT.forEach(tr => {
+        const bk = state.transportBookings[tr.id] || {};
+        if (bk.status === "booked") booked++;
+        if (bk.status === "onsite") onsite++;
+        totalCost += Number(bk.cost) || 0;
+      });
+
+      const elBooked = document.getElementById("tr-stat-booked");
+      const elOnsite = document.getElementById("tr-stat-onsite");
+      const elCost = document.getElementById("tr-stat-cost");
+      if (elBooked) elBooked.textContent = `${booked} / ${INITIAL_TRANSPORT.length}`;
+      if (elOnsite) elOnsite.textContent = `${onsite}건`;
+      if (elCost) elCost.textContent = `${totalCost.toLocaleString()}원`;
+    }
+
+    function renderTransport() {
+      const container = document.getElementById("transport-list");
+      if (!container) return;
+
+      const filtered = INITIAL_TRANSPORT.filter(tr => {
+        const status = (state.transportBookings[tr.id] || {}).status || "pending";
+        if (state.transportStatusFilter === "all") return true;
+        return status === state.transportStatusFilter;
+      });
+
+      container.innerHTML = filtered.map(tr => {
+        const bk = state.transportBookings[tr.id] || { status: "pending" };
+        const status = bk.status || "pending";
+
+        return `
+          <div class="bg-white rounded-2xl border ${status === "booked" ? "border-forest/40" : "border-stone-200"} p-4 sm:p-5 space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-forest text-white">구간 ${tr.legNum}</span>
+                  <span class="text-xs font-semibold text-ink-muted">${tr.date}</span>
+                  <h3 class="text-sm sm:text-base font-bold text-ink">${tr.route}</h3>
+                </div>
+                <p class="text-xs text-ink-muted mt-1">${tr.mode} · 소요 ${tr.duration} · 예매처: ${tr.defaultPlatform}</p>
+              </div>
+              <select
+                onchange="updateTransportField('${tr.id}', 'status', this.value); renderTransport();"
+                class="px-3 py-1.5 rounded-xl text-xs font-semibold border focus:outline-none ${
+                  status === "booked"
+                    ? "bg-forest-soft text-forest border-forest/30"
+                    : status === "onsite"
+                      ? "bg-amber-50 text-amber-800 border-amber-200"
+                      : "bg-stone-100 text-ink-muted border-stone-200"
+                }"
+              >
+                <option value="pending" ${status === "pending" ? "selected" : ""}>예매 전</option>
+                <option value="booked" ${status === "booked" ? "selected" : ""}>예매 완료</option>
+                <option value="onsite" ${status === "onsite" ? "selected" : ""}>현장 발권</option>
+              </select>
+            </div>
+
+            <div class="bg-paper rounded-xl p-2.5 text-xs text-ink-muted leading-relaxed">
+              <strong class="text-forest">이동 팁:</strong> ${tr.tip}
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+              <input
+                type="text"
+                placeholder="출발 시각 (예: 09:30)"
+                value="${(bk.depTime || "").replace(/"/g, "&quot;")}"
+                onchange="updateTransportField('${tr.id}', 'depTime', this.value)"
+                class="px-3 py-2 text-xs bg-paper border border-stone-200 rounded-xl focus:outline-none focus:border-forest"
+              />
+              <input
+                type="text"
+                placeholder="도착 시각 (예: 12:00)"
+                value="${(bk.arrTime || "").replace(/"/g, "&quot;")}"
+                onchange="updateTransportField('${tr.id}', 'arrTime', this.value)"
+                class="px-3 py-2 text-xs bg-paper border border-stone-200 rounded-xl focus:outline-none focus:border-forest"
+              />
+              <input
+                type="text"
+                placeholder="좌석 / 열차번호"
+                value="${(bk.seat || "").replace(/"/g, "&quot;")}"
+                onchange="updateTransportField('${tr.id}', 'seat', this.value)"
+                class="px-3 py-2 text-xs bg-paper border border-stone-200 rounded-xl focus:outline-none focus:border-forest"
+              />
+              <input
+                type="number"
+                placeholder="결제 금액 (원)"
+                value="${bk.cost || ""}"
+                onchange="updateTransportField('${tr.id}', 'cost', this.value)"
+                class="px-3 py-2 text-xs bg-paper border border-stone-200 rounded-xl focus:outline-none focus:border-forest"
+              />
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      renderTransportStats();
+    }
+
+    // =========================================================================
+    // 7. TAB 3: HUBS (STAYS & DYNAMIC NEIGHBORHOOD CAFE MATCHING)
+    // =========================================================================
+    function getMatchedSpotsForHub(hub) {
+      const stay = state.bookedStays[hub.id] || {};
+      const queryText = `${stay.name || ""} ${stay.area || ""}`.toLowerCase().replace(/\s+/g, "");
+      if (!queryText) {
+        return hub.spots.slice(0, 5).map(s => ({ ...s, isNearStay: false }));
+      }
+
+      const scored = hub.spots.map((spot, idx) => {
+        let score = 0;
+        (spot.areaTags || []).forEach(tag => {
+          if (queryText.includes(tag.toLowerCase())) score += 10;
+        });
+        return { ...spot, score, idx, isNearStay: score > 0 };
+      });
+
+      scored.sort((a, b) => (b.score - a.score) || (a.idx - b.idx));
+      return scored.slice(0, 5);
+    }
+
+    function handleStayNameInput(hubId, cityKey, nameVal) {
+      const stay = state.bookedStays[hubId] || {};
+      stay.name = nameVal;
+      if (nameVal.trim()) {
+        stay.area = detectNaverNeighborhood(nameVal, cityKey);
+      } else {
+        stay.area = "";
+      }
+      state.bookedStays[hubId] = stay;
+      saveState();
+
+      const areaInput = document.getElementById(`stay-area-${hubId}`);
+      if (areaInput) areaInput.value = stay.area;
+      renderHubSpotsList(hubId);
+      renderItinerary();
+    }
+
+    function updateStayField(hubId, field, value) {
+      const stay = state.bookedStays[hubId] || {};
+      if (field === "booked") {
+        stay.booked = Boolean(value);
+      } else if (field === "cost") {
+        stay.cost = value ? Number(value) : 0;
+      } else {
+        stay[field] = value;
+      }
+      state.bookedStays[hubId] = stay;
+      saveState();
+
+      if (field === "area") {
+        renderHubSpotsList(hubId);
+      }
+      if (field === "cost") {
+        renderBudget();
+      }
+      renderItinerary();
+    }
+
+    function renderHubSpotsList(hubId) {
+      const hub = CITY_HUBS.find(h => h.id === hubId);
+      const listEl = document.getElementById(`hub-spots-${hubId}`);
+      if (!hub || !listEl) return;
+
+      const spots = getMatchedSpotsForHub(hub);
+      listEl.innerHTML = spots.map(spot => `
+        <li class="p-2.5 rounded-xl bg-paper border ${spot.isNearStay ? "border-forest/30 bg-forest-soft/20" : "border-stone-200/70"} space-y-1">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-xs font-bold text-ink">${spot.name}</span>
+            ${spot.isNearStay ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-forest text-white shrink-0">숙소 인근 추천</span>' : ""}
+          </div>
+          <p class="text-[11px] text-ink-muted leading-relaxed">${spot.desc}</p>
+        </li>
+      `).join("");
+    }
+
+    function renderHubs() {
+      const grid = document.getElementById("hubs-grid");
+      if (!grid) return;
+
+      grid.innerHTML = CITY_HUBS.map(hub => {
+        const stay = state.bookedStays[hub.id] || {};
+        const spots = getMatchedSpotsForHub(hub);
+
+        return `
+          <div class="bg-white rounded-2xl border ${stay.booked ? "border-forest/40" : "border-stone-200"} p-4 sm:p-5 flex flex-col justify-between space-y-4">
+            <div class="space-y-3">
+              <div class="flex items-center justify-between gap-2 border-b border-stone-100 pb-2.5">
+                <div>
+                  <h3 class="text-base font-bold text-ink">${hub.city}</h3>
+                  <p class="text-xs text-ink-muted">${hub.dates}</p>
+                </div>
+                <label class="inline-flex items-center gap-1.5 cursor-pointer px-2.5 py-1 rounded-xl text-xs font-semibold ${
+                  stay.booked ? "bg-forest text-white" : "bg-stone-100 text-ink-muted"
+                }">
+                  <input
+                    type="checkbox"
+                    class="sr-only"
+                    ${stay.booked ? "checked" : ""}
+                    onchange="updateStayField('${hub.id}', 'booked', this.checked); renderHubs();"
+                  />
+                  <span>${stay.booked ? "예약 확정" : "예약 전"}</span>
+                </label>
+              </div>
+
+              <!-- Recommended Stay Area & Tip -->
+              <div class="bg-sand/50 rounded-xl p-3 text-xs space-y-1">
+                <div class="font-semibold text-forest">추천 숙박 동네: ${hub.stayArea}</div>
+                <p class="text-ink-muted leading-relaxed">${hub.stayTip}</p>
+              </div>
+
+              <!-- User Booked Stay Inputs -->
+              <div class="space-y-2 bg-paper p-3 rounded-xl border border-stone-200/80">
+                <div class="text-[11px] font-bold text-ink">내가 예약한 숙소 기록</div>
+                <input
+                  type="text"
+                  placeholder="숙소명 입력 (예: 호텔잠, 웰컴빌리지...)"
+                  value="${(stay.name || "").replace(/"/g, "&quot;")}"
+                  oninput="handleStayNameInput('${hub.id}', '${hub.cityKey}', this.value)"
+                  class="w-full px-3 py-2 text-xs bg-white border border-stone-200 rounded-lg focus:outline-none focus:border-forest"
+                />
+                <input
+                  type="text"
+                  id="stay-area-${hub.id}"
+                  placeholder="네이버 기준 동네 (숙소명 입력 시 자동 매칭)"
+                  value="${(stay.area || "").replace(/"/g, "&quot;")}"
+                  oninput="updateStayField('${hub.id}', 'area', this.value)"
+                  class="w-full px-3 py-2 text-xs bg-white border border-stone-200 rounded-lg focus:outline-none focus:border-forest"
+                />
+                <div class="grid grid-cols-2 gap-2">
+                  <input
+                    type="number"
+                    placeholder="총 숙박비 (원)"
+                    value="${stay.cost || ""}"
+                    onchange="updateStayField('${hub.id}', 'cost', this.value)"
+                    class="px-3 py-2 text-xs bg-white border border-stone-200 rounded-lg focus:outline-none focus:border-forest"
+                  />
+                  <input
+                    type="text"
+                    placeholder="체크인/메모"
+                    value="${(stay.memo || "").replace(/"/g, "&quot;")}"
+                    onchange="updateStayField('${hub.id}', 'memo', this.value)"
+                    class="px-3 py-2 text-xs bg-white border border-stone-200 rounded-lg focus:outline-none focus:border-forest"
+                  />
+                </div>
+              </div>
+
+              <!-- Dynamic Top 5 Work Cafes & Bookstores -->
+              <div class="space-y-2 pt-1">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-ink flex items-center gap-1.5">
+                    <i data-lucide="coffee" class="w-3.5 h-3.5 text-terracotta"></i> 노트북 작업 카페 &amp; 북카페 5선
+                  </span>
+                  <span class="text-[10px] text-ink-subtle">숙소 위치 연동</span>
+                </div>
+                <ul id="hub-spots-${hub.id}" class="space-y-2">
+                  ${spots.map(spot => `
+                    <li class="p-2.5 rounded-xl bg-paper border ${spot.isNearStay ? "border-forest/30 bg-forest-soft/20" : "border-stone-200/70"} space-y-1">
+                      <div class="flex items-center justify-between gap-2">
+                        <span class="text-xs font-bold text-ink">${spot.name}</span>
+                        ${spot.isNearStay ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-forest text-white shrink-0">숙소 인근 추천</span>' : ""}
+                      </div>
+                      <p class="text-[11px] text-ink-muted leading-relaxed">${spot.desc}</p>
+                    </li>
+                  `).join("")}
+                </ul>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    // =========================================================================
+    // 8. TAB 4: BUDGET & EXPENSE TRACKER
+    // =========================================================================
+    function getCategoryActualSpent(categoryId) {
+      let sum = state.expenses
+        .filter(e => e.category === categoryId)
+        .reduce((acc, cur) => acc + (Number(cur.amount) || 0), 0);
+
+      if (categoryId === "stay") {
+        Object.values(state.bookedStays).forEach(st => {
+          sum += Number(st.cost) || 0;
+        });
+      }
+      if (categoryId === "intercity") {
+        Object.values(state.transportBookings).forEach(tr => {
+          sum += Number(tr.cost) || 0;
+        });
+      }
+      return sum;
+    }
+
+    function calculateTotalSpent() {
+      return BUDGET_CATEGORIES.reduce((acc, cat) => acc + getCategoryActualSpent(cat.id), 0);
+    }
+
+    function renderBudget() {
+      const tbody = document.getElementById("budget-category-tbody");
+      const listEl = document.getElementById("expense-list");
+      const countEl = document.getElementById("expense-count");
+      if (!tbody || !listEl) return;
+
+      let totalFrugal = 0;
+      let totalStandard = 0;
+      let totalActual = 0;
+
+      tbody.innerHTML = BUDGET_CATEGORIES.map(cat => {
+        const actual = getCategoryActualSpent(cat.id);
+        totalFrugal += cat.frugal;
+        totalStandard += cat.standard;
+        totalActual += actual;
+
+        return `
+          <tr class="hover:bg-paper/60">
+            <td class="py-3 px-4 font-semibold text-ink">${cat.name}</td>
+            <td class="py-3 px-4 text-xs text-ink-muted hidden md:table-cell">${cat.desc}</td>
+            <td class="py-3 px-4 text-right text-ink-muted">${cat.frugal.toLocaleString()}원</td>
+            <td class="py-3 px-4 text-right font-medium text-ink">${cat.standard.toLocaleString()}원</td>
+            <td class="py-3 px-4 text-right font-bold ${actual > cat.standard && cat.standard > 0 ? "text-terracotta" : "text-forest"}">${actual.toLocaleString()}원</td>
+          </tr>
+        `;
+      }).join("") + `
+        <tr class="bg-sand/70 font-bold border-t border-stone-300">
+          <td class="py-3 px-4 text-ink">합계</td>
+          <td class="py-3 px-4 text-xs text-ink-muted hidden md:table-cell">17박 18일 총 예상 대비 실제 지출</td>
+          <td class="py-3 px-4 text-right text-ink-muted">${totalFrugal.toLocaleString()}원</td>
+          <td class="py-3 px-4 text-right text-forest">${totalStandard.toLocaleString()}원</td>
+          <td class="py-3 px-4 text-right text-terracotta">${totalActual.toLocaleString()}원</td>
+        </tr>
+      `;
+
+      const elSpent = document.getElementById("budget-total-spent");
+      const elRatio = document.getElementById("budget-spent-ratio");
+      const elRem = document.getElementById("budget-remaining");
+      if (elSpent) elSpent.innerHTML = `${totalActual.toLocaleString()}<span class="text-xs font-normal ml-0.5">원</span>`;
+      if (elRatio) elRatio.textContent = `표준 예산 대비 ${Math.round((totalActual / totalStandard) * 100)}%`;
+      if (elRem) elRem.innerHTML = `${(totalStandard - totalActual).toLocaleString()}<span class="text-xs font-normal ml-0.5">원</span>`;
+
+      if (countEl) countEl.textContent = state.expenses.length;
+
+      if (!state.expenses.length) {
+        listEl.innerHTML = `<div class="p-4 text-center text-xs text-ink-subtle">아직 직접 추가한 지출 내역이 없습니다. 위 입력창에서 사전 준비물이나 현장 지출을 기록해 보세요.</div>`;
+      } else {
+        const catMap = Object.fromEntries(BUDGET_CATEGORIES.map(c => [c.id, c.name]));
+        listEl.innerHTML = state.expenses.slice().reverse().map((exp, revIdx) => {
+          const realIdx = state.expenses.length - 1 - revIdx;
+          return `
+            <div class="flex items-center justify-between gap-2 px-3.5 py-2.5 text-xs bg-white hover:bg-paper">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-semibold text-ink-muted">${exp.date}</span>
+                <span class="px-2 py-0.5 rounded bg-sand text-ink font-medium">${catMap[exp.category] || exp.category}</span>
+                <span class="text-ink font-medium">${exp.desc}</span>
+              </div>
+              <div class="flex items-center gap-3 shrink-0">
+                <span class="font-bold text-terracotta">${Number(exp.amount).toLocaleString()}원</span>
+                <button onclick="deleteExpense(${realIdx})" class="text-ink-subtle hover:text-terracotta" title="삭제">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+            </div>
+          `;
+        }).join("");
+      }
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function deleteExpense(idx) {
+      state.expenses.splice(idx, 1);
+      saveState();
+      renderBudget();
+      showToast("지출 내역이 삭제되었습니다.");
+    }
+
+    // =========================================================================
+    // 9. TAB 5: PACKING CHECKLIST
+    // =========================================================================
+    function setPackingTierFilter(tier) {
+      state.packingTierFilter = tier;
+      saveState();
+      document.querySelectorAll(".tier-btn").forEach(btn => {
+        const active = btn.dataset.tier === tier;
+        btn.className = active
+          ? "tier-btn px-3 py-2 rounded-xl text-xs font-semibold bg-forest text-white"
+          : "tier-btn px-3 py-2 rounded-xl text-xs font-medium bg-stone-100 text-ink-muted";
+      });
+      renderPacking();
+    }
+
+    function togglePackingItem(itemId) {
+      const item = state.packing.find(p => p.id === itemId);
+      if (item) {
+        item.checked = !item.checked;
+        saveState();
+        renderPacking();
+      }
+    }
+
+    function deletePackingItem(itemId) {
+      state.packing = state.packing.filter(p => p.id !== itemId);
+      saveState();
+      renderPacking();
+      showToast("준비물 항목이 삭제되었습니다.");
+    }
+
+    function renderPacking() {
+      const container = document.getElementById("packing-categories-container");
+      if (!container) return;
+
+      const total = state.packing.length;
+      const checkedTotal = state.packing.filter(p => p.checked).length;
+      const pct = total ? Math.round((checkedTotal / total) * 100) : 0;
+
+      const countText = document.getElementById("packing-count-text");
+      const progressBar = document.getElementById("packing-progress-bar");
+      if (countText) countText.textContent = `${checkedTotal} / ${total} 완료 (${pct}%)`;
+      if (progressBar) progressBar.style.width = `${pct}%`;
+
+      const query = (state.packingSearch || "").toLowerCase().trim();
+      const filtered = state.packing.filter(item => {
+        if (state.packingTierFilter === "core" && item.tier !== "core") return false;
+        if (state.packingTierFilter === "bonus" && item.tier !== "bonus") return false;
+        if (state.packingTierFilter === "unchecked" && item.checked) return false;
+        if (query && !item.label.toLowerCase().includes(query) && !(item.note || "").toLowerCase().includes(query)) return false;
+        return true;
+      });
+
+      const categories = [...new Set(filtered.map(i => i.category))];
+      if (!categories.length) {
+        container.innerHTML = `<div class="bg-white rounded-2xl border border-stone-200 p-8 text-center text-xs text-ink-muted">조건에 맞는 준비물이 없습니다.</div>`;
+        return;
+      }
+
+      container.innerHTML = categories.map(cat => {
+        const items = filtered.filter(i => i.category === cat);
+        return `
+          <div class="bg-white rounded-2xl border border-stone-200 overflow-hidden">
+            <div class="bg-sand/60 px-4 py-2.5 border-b border-stone-200/80 flex items-center justify-between">
+              <h3 class="text-xs sm:text-sm font-bold text-ink">${cat}</h3>
+              <span class="text-[11px] text-ink-muted">${items.filter(i => i.checked).length} / ${items.length}</span>
+            </div>
+            <div class="divide-y divide-stone-100">
+              ${items.map(item => `
+                <div class="flex items-start justify-between gap-3 p-3.5 hover:bg-paper/70 transition">
+                  <label class="flex items-start gap-3 cursor-pointer flex-1">
+                    <input
+                      type="checkbox"
+                      ${item.checked ? "checked" : ""}
+                      onchange="togglePackingItem('${item.id}')"
+                      class="mt-0.5 w-4 h-4 rounded accent-forest cursor-pointer"
+                    />
+                    <div class="space-y-0.5">
+                      <div class="text-xs sm:text-sm font-medium ${item.checked ? "line-through text-ink-subtle" : "text-ink"}">
+                        ${item.label}
+                        ${item.tier === "bonus" ? '<span class="ml-1.5 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-terracotta-soft text-terracotta">꿀템</span>' : ""}
+                      </div>
+                      ${item.note ? `<p class="text-[11px] text-ink-muted leading-relaxed">${item.note}</p>` : ""}
+                    </div>
+                  </label>
+                  ${item.custom ? `
+                    <button onclick="deletePackingItem('${item.id}')" class="text-ink-subtle hover:text-terracotta p-1" title="삭제">
+                      <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                    </button>
+                  ` : ""}
+                </div>
+              `).join("")}
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    // =========================================================================
+    // 10. HEADER SUMMARY & INITIALIZATION
+    // =========================================================================
+    function updateHeaderStats() {
+      const doneDays = INITIAL_ITINERARY.filter(d => (state.itineraryMeta[d.id] || {}).completed).length;
+      const bookedStays = CITY_HUBS.filter(h => (state.bookedStays[h.id] || {}).booked).length;
+      const bookedTr = INITIAL_TRANSPORT.filter(t => (state.transportBookings[t.id] || {}).status === "booked").length;
+      const totalPack = state.packing.length;
+      const donePack = state.packing.filter(p => p.checked).length;
+      const packPct = totalPack ? Math.round((donePack / totalPack) * 100) : 0;
+
+      const elIt = document.getElementById("header-itinerary-progress");
+      const elSt = document.getElementById("header-stay-progress");
+      const elTr = document.getElementById("header-transport-progress");
+      const elPk = document.getElementById("header-packing-progress");
+
+      if (elIt) elIt.textContent = `${doneDays}/${INITIAL_ITINERARY.length}일`;
+      if (elSt) elSt.textContent = `${bookedStays}/${CITY_HUBS.length}곳`;
+      if (elTr) elTr.textContent = `${bookedTr}/${INITIAL_TRANSPORT.length}건`;
+      if (elPk) elPk.textContent = `${packPct}%`;
+
+      const cardSt = document.getElementById("summary-stay-card");
+      const cardTr = document.getElementById("summary-transport-card");
+      const cardPk = document.getElementById("summary-packing-card");
+      if (cardSt) cardSt.textContent = `${bookedStays} / ${CITY_HUBS.length} 거점 확정`;
+      if (cardTr) cardTr.textContent = `${bookedTr} / ${INITIAL_TRANSPORT.length} 구간 완료`;
+      if (cardPk) cardPk.textContent = `${donePack} / ${totalPack} 완료 (${packPct}%)`;
+
+      // D-Day calculation for 2026-11-26
+      const ddayEl = document.getElementById("dday-badge");
+      if (ddayEl) {
+        const start = new Date("2026-11-26T00:00:00+09:00");
+        const now = new Date();
+        const diffDays = Math.ceil((start - now) / (1000 * 60 * 60 * 24));
+        if (diffDays > 0) ddayEl.textContent = `D-${diffDays} 출발 준비중`;
+        else if (diffDays === 0) ddayEl.textContent = `D-DAY 오늘 출발!`;
+        else ddayEl.textContent = `여정 ${Math.abs(diffDays) + 1}일차`;
+      }
+    }
+
+    function renderAll() {
+      renderCityFilters();
+      renderItinerary();
+      renderTransport();
+      renderHubs();
+      renderBudget();
+      renderPacking();
+      updateHeaderStats();
+      updateSheetsIndicator();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // Expense form submit
+      const expForm = document.getElementById("expense-form");
+      if (expForm) {
+        expForm.addEventListener("submit", e => {
+          e.preventDefault();
+          const date = document.getElementById("exp-date").value.trim();
+          const category = document.getElementById("exp-category").value;
+          const desc = document.getElementById("exp-desc").value.trim();
+          const amount = Number(document.getElementById("exp-amount").value);
+          if (!date || !desc || !amount) return;
+
+          state.expenses.push({ date, category, desc, amount });
+          saveState();
+          renderBudget();
+          expForm.reset();
+          showToast("지출 내역이 추가되었습니다.");
+        });
+      }
+
+      // Packing search & add form
+      const packSearch = document.getElementById("packing-search");
+      if (packSearch) {
+        packSearch.addEventListener("input", e => {
+          state.packingSearch = e.target.value;
+          renderPacking();
+        });
+      }
+
+      const packForm = document.getElementById("packing-add-form");
+      if (packForm) {
+        packForm.addEventListener("submit", e => {
+          e.preventDefault();
+          const category = document.getElementById("new-pack-category").value;
+          const label = document.getElementById("new-pack-label").value.trim();
+          const note = document.getElementById("new-pack-note").value.trim();
+          if (!label) return;
+
+          state.packing.push({
+            id: "custom_" + Date.now(),
+            category,
+            tier: category === "꿀템 (선택)" ? "bonus" : "core",
+            label,
+            note,
+            checked: false,
+            custom: true
+          });
+          saveState();
+          renderPacking();
+          packForm.reset();
+          showToast("새 준비물 항목이 추가되었습니다.");
+        });
+      }
+
+      renderAll();
+      if (state.activeTab && state.activeTab !== "itinerary") {
+        switchTab(state.activeTab);
+      }
+
+      // Auto pull from Google Sheets on load if connected
+      if (getSheetsWebhookUrl()) {
+        pullFromGoogleSheets(true);
+      }
+    });
+  </script>
+</body>
+</html>
